@@ -15,7 +15,8 @@ class CollocationData3D:
     n_phi: int
     theta: np.array
     phi: np.array
-    mesh : np.ndarray
+    theta_grid: np.ndarray
+    phi_grid: np.ndarray
 
 
 def collocation_points_2d(n_theta: int, startpoint: False) -> CollocationData2D:
@@ -35,8 +36,8 @@ def collocation_points_3d(n_theta: int, n_phi: int) -> CollocationData3D:
     ## TODO: Rewrite to pure numpy?
     theta = np.array([(np.pi*i)/(n_theta+1) for i in range(1, n_theta+1)], dtype=np.float64) ## TODO: Check why we need to add 1 in (np.pi*i)/(n_theta+1)
     phi = np.array([(2*np.pi*i)/n_phi for i in range(1, n_phi+1)], dtype=np.float64)
-    mesh = np.meshgrid(theta, phi)
-    return CollocationData3D(n_theta, n_phi, theta, phi, mesh)
+    theta_grid, phi_grid = np.meshgrid(theta, phi)
+    return CollocationData3D(n_theta, n_phi, theta, phi, theta_grid, phi_grid)
 
 def linspace_points_3d(n_theta: int, n_phi: int) -> CollocationData3D:
     '''
@@ -44,8 +45,8 @@ def linspace_points_3d(n_theta: int, n_phi: int) -> CollocationData3D:
     '''
     theta = np.linspace(0, np.pi, n_theta)
     phi = np.linspace(0, 2*np.pi, n_phi)
-    mesh = np.meshgrid(theta, phi)
-    return CollocationData3D(n_theta, n_phi, theta, phi, mesh)
+    theta_grid, phi_grid = np.meshgrid(theta, phi)
+    return CollocationData3D(n_theta, n_phi, theta, phi, theta_grid, phi_grid)
 
 
 

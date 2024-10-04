@@ -41,20 +41,20 @@ def starlike_sphere_base(collocation: CollocationData3D) -> StarlikeSurface:
     '''
         Generate a sphere mesh of radius one
     '''
-    x = np.outer(np.sin(collocation.theta), np.cos(collocation.phi))
-    y = np.outer(np.sin(collocation.theta), np.sin(collocation.phi))
-    z = np.outer(np.cos(collocation.theta), np.ones(np.size(collocation.phi)))
-
+    x = (np.sin(collocation.theta_grid) * np.cos(collocation.phi_grid)).ravel()
+    y = (np.sin(collocation.theta_grid) * np.sin(collocation.phi_grid)).ravel()
+    z = np.cos(collocation.theta_grid).ravel()
     return StarlikeSurface(collocation, x, y, z)
 
-def starlike_surface(r_mesh: np.ndarray, base: StarlikeSurface) -> StarlikeSurface:
+def starlike_surface(r_grid: np.ndarray, collocation: CollocationData3D) -> StarlikeSurface:
     '''
-        Generate a starlike curve from a circle base
+        Generate a sphere mesh of radius one
     '''
-    x = r_mesh * base.x
-    y = r_mesh * base.y
-    z = r_mesh * base.z
-    return StarlikeSurface(base.collocation, x, y, z)
+    x = (r_grid * np.sin(collocation.theta_grid) * np.cos(collocation.phi_grid)).ravel()
+    y = (r_grid * np.sin(collocation.theta_grid) * np.sin(collocation.phi_grid)).ravel()
+    z = (r_grid * np.cos(collocation.theta_grid)).ravel()
+    return StarlikeSurface(collocation, x, y, z)
+
 
 
 

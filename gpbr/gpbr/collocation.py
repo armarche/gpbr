@@ -31,7 +31,7 @@ def collocation_points_2d(n_theta: int, startpoint: False) -> CollocationData2D:
 
 def collocation_points_3d(n_theta: int, n_phi: int) -> CollocationData3D:
     '''
-        Generate the collocation points for the MFS in 2D
+        Generate the collocation points for the MFS in 3D
     '''
     ## TODO: Rewrite to pure numpy?
     theta = np.array([(np.pi*i)/(n_theta+1) for i in range(1, n_theta+1)], dtype=np.float64) ## TODO: Check why we need to add 1 in (np.pi*i)/(n_theta+1)
@@ -41,7 +41,7 @@ def collocation_points_3d(n_theta: int, n_phi: int) -> CollocationData3D:
 
 def linspace_points_3d(n_theta: int, n_phi: int) -> CollocationData3D:
     '''
-        Generate the collocation points for the MFS in 2D
+        Generate the collocation points for the MFS in 3D
     '''
     theta = np.linspace(0, np.pi, n_theta)
     phi = np.linspace(0, 2*np.pi, n_phi)

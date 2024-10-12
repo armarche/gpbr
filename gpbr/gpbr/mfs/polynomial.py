@@ -6,14 +6,7 @@ import numpy as np
 from numpy.polynomial.polynomial import polyval
 from numpy.polynomial import Polynomial
 from collections.abc import Callable
-
-## TODO: this should be moved
-@dataclass
-class MfSData: # Will be filled during implementing the problem
-    Beta: np.array # Array of beta coeficient.
-    nu: np.float64 # constant. nu = beta_0
-
-
+from .data import MfSData
 
 @dataclass
 class MFSPolinomials3D:
@@ -27,7 +20,7 @@ class MFSPolinomials3D:
     \\  1  an1 an2  .  .  .  ann  / 
     """
     A: np.ndarray
-    polinomials: np.ndarray[Polynomial]
+    polynomials: np.ndarray[Polynomial]
 
 
 @dataclass

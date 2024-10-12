@@ -5,7 +5,7 @@ import numpy as np
 from dataclasses import dataclass
 
 ## TODO: this should be moved
-@dataclass
+@dataclass(frozen=True)
 class MfSData: # Will be filled during implementing the problem
     N: np.int32 # Number of time points-1
     T: np.float64 # Time of the smulation

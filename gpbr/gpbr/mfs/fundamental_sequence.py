@@ -6,7 +6,7 @@ import numpy as np
 from numpy import linalg
 from scipy.special import kn
 
-from gpbr.gpbr.boundary import StarlikeCurve
+from gpbr.gpbr.boundary import StarlikeCurve, StarlikeSurface
 from gpbr.gpbr.mfs.data import MfSData
 from gpbr.gpbr.source import SourcePoints2D
 from .polynomial import MFSPolinomials3D, MFSPolinomials2D
@@ -29,11 +29,11 @@ class FundamentalSequence:
 @dataclass
 class FundamentalSequenceCoefs:
     alpha: np.ndarray
-    def get(self, n: int) -> np.ndarray:# alpha coeeficients in time point n
+    def get(self, n: int) -> np.array:
         """
-        Return the phis mesh in time point n
+        Return alpha coefficients in time point n
         """
-        return self.alpha[n,:]
+        return self.alpha[n]
 
 def fundamental_sequence_2d(curve: StarlikeCurve, source_points: SourcePoints2D, mfs_data: MfSData, mfs_poly: MFSPolinomials2D) -> FundamentalSequence: #TODO: optimize this function
     '''
@@ -53,6 +53,25 @@ def fundamental_sequence_2d(curve: StarlikeCurve, source_points: SourcePoints2D,
         phis[n] = phi_vals
     
     return FundamentalSequence(M, phis)
+
+# def fundamental_sequence_3d(curve: StarlikeSurface, source_points: SourcePoints2D, mfs_data: MfSData, mfs_poly: MFSPolinomials2D) -> FundamentalSequence: #TODO: optimize this function
+#     '''
+#         Calculate the fundamental sequence for the 2D problem
+#         Note: assume that number of collocation points is the same as the number of source points
+#     '''
+#     M = curve.collocation.n # number of collocation points
+#     phis = np.empty((mfs_data.N+1, M, M), dtype=np.float64)
+#     for n in range(0, mfs_data.N+1): # N+1 time points    
+#         phi_vals = np.empty((M, M), dtype=np.float64)
+#         phi_vals[:] = np.nan
+#         for i in range(0, M): # i = 1, ..., M
+#             for j in range(0, M): # j = 1, ..., M
+#                 x, y = source_points.get_point(j)
+#                 delta = linalg.norm([curve.x[i]-x, curve.y[i]-y])
+#                 phi_vals[i, j] = fs_2d(n, delta, mfs_data.nu, mfs_poly)
+#         phis[n] = phi_vals
+    
+#     return FundamentalSequence(M, phis)
 
 
 def fs_2d(n: int, arg: np.float64, nu: float, polynomials: MFSPolinomials2D) -> np.float64:

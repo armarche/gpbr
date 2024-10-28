@@ -18,10 +18,14 @@ class SourcePoints2D:
         '''
             Return the j-th source point
         '''
+        # if j < self.M//2:
+        #     return np.array([self.gart1.x[j], self.gart1.y[j]])
+        # else:
+        #     return np.array([self.gart2.x[j - self.M//2], self.gart2.y[j - self.M//2]])
         if j < self.M//2:
-            return np.array([self.gart1.x[j], self.gart1.y[j]])
+            return np.array([self.gart2.x[j], self.gart2.y[j]])
         else:
-            return np.array([self.gart2.x[j - self.M//2], self.gart2.y[j - self.M//2]])
+            return np.array([self.gart1.x[j - self.M//2], self.gart1.y[j - self.M//2]])
         
 
 def source_points_2d(

@@ -26,6 +26,11 @@ class SourcePoints2D:
             return np.array([self.gart2.x[j], self.gart2.y[j]])
         else:
             return np.array([self.gart1.x[j - self.M//2], self.gart1.y[j - self.M//2]])
+    def as_boundary(self) -> StarlikeCurve:
+        '''
+            Return the combined boundary
+        '''
+        return StarlikeCurve(self.gart1.collocation, np.concatenate((self.gart1.x, self.gart2.x)), np.concatenate((self.gart1.y, self.gart2.y)))
         
 
 def source_points_2d(

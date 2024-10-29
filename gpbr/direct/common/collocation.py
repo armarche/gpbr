@@ -47,6 +47,3 @@ def linspace_points_3d(n_theta: int, n_phi: int) -> CollocationData3D:
     phi = np.linspace(0, 2*np.pi, n_phi)
     theta_grid, phi_grid = np.meshgrid(theta, phi)
     return CollocationData3D(n_theta, n_phi, theta, phi, theta_grid, phi_grid)
-
-
-

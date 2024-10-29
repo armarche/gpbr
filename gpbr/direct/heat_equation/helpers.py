@@ -2,10 +2,11 @@
 MFS helpers
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
-from gpbr.gpbr.boundary import StarlikeCurve
-from gpbr.gpbr.mfs.data import MfSData
+from ..common.boundary import StarlikeCurve
+from .common import MFSData
 from .fundamental_sequence import FundamentalSequence, FundamentalSequenceCoefs
 import numpy as np
 
@@ -23,9 +24,9 @@ def form_fs_vector_2d(
         g1: StarlikeCurve,
         g2: StarlikeCurve,
         coeffs: FundamentalSequenceCoefs,
-        f1_func,
-        f2_func,
-        mfs_data: MfSData) -> np.ndarray:
+        f1_func: Callable[[np.float64, np.float64], np.float64],
+        f2_func: Callable[[np.float64, np.float64], np.float64],
+        mfs_data: MFSData) -> np.ndarray:
     """
     Form the vector for the method of fundamental solutions
     """
@@ -49,7 +50,7 @@ def form_fs_vector_2d(
                 phi_index = n-m
                 phi2_g2  = g2_sequnce.get(phi_index)
                 right_sum += coeffs.alpha[m, j-1]*phi2_g2[i-1, j-1]
-        F[M+i-1] = f2_func([g2.x[i-1], g2.y[i-1]], tn) - right_sum
+        F[M+i-1] = f2_func(np.linalg.norm([g2.x[i-1], g2.y[i-1]]), tn) - right_sum
     return F
 
 # def form_fs_vector(

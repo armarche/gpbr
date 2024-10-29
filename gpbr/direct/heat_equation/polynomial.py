@@ -6,7 +6,7 @@ import numpy as np
 from numpy.polynomial.polynomial import polyval
 from numpy.polynomial import Polynomial
 from collections.abc import Callable
-from .data import MfSData
+from .common import MFSData
 
 @dataclass
 class MFSPolinomials3D:
@@ -38,7 +38,7 @@ class MFSPolinomials2D:
     v_polynomials: np.ndarray[Polynomial]
     w_polynomials: np.ndarray[Polynomial]
 
-def calculate_polinomials_coefs(coefs_func: Callable[[int, int, np.ndarray], np.float64], mfs_data: MfSData, N: int) -> MFSPolinomials3D:
+def calculate_polinomials_coefs(coefs_func: Callable[[int, int, np.ndarray], np.float64], mfs_data: MFSData, N: int) -> MFSPolinomials3D:
     # a_nm, n=0,1,...N, m =0,1,...n
     A = np.empty((N+1,N+1))
 
@@ -57,7 +57,7 @@ def calculate_polinomials_coefs(coefs_func: Callable[[int, int, np.ndarray], np.
             A[n,m] = coefs_func(n,m,A)
     return A
 
-def calculate_3d_polinomials(mfs_data: MfSData, N: int) -> MFSPolinomials3D:
+def calculate_3d_polinomials(mfs_data: MFSData, N: int) -> MFSPolinomials3D:
     def polinomial_coeff_3d(n: int,k:int, A: np.ndarray) -> np.float64:
         res = k*(k+1)*A[n,k+1]
         for m in range(k-1, n): # m = k-1;n-1
@@ -68,7 +68,7 @@ def calculate_3d_polinomials(mfs_data: MfSData, N: int) -> MFSPolinomials3D:
     polinomials = np.array([Polynomial(A[n,:n+1]) for n in range(N+1)], dtype=Polynomial)
     return MFSPolinomials3D(A, polinomials)
 
-def calculate_2d_polinomials(mfs_data: MfSData, N: int) -> MFSPolinomials2D:
+def calculate_2d_polinomials(mfs_data: MFSData, N: int) -> MFSPolinomials2D:
     def polinomial_coeff_2d(n: int,k:int, A: np.ndarray) -> np.float64:
         # res = (4*np.trunc((k+1)/2)**2)*A[n,k+1]
         # res = (4*int((k+1)/2)**2)*A[n,k+1]

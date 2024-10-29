@@ -6,9 +6,12 @@ import numpy as np
 from numpy import linalg
 from scipy.special import kn
 
-from gpbr.gpbr.boundary import StarlikeCurve, StarlikeSurface
-from gpbr.gpbr.mfs.data import MfSData
-from gpbr.gpbr.source import SourcePoints2D
+
+from ..common.boundary import StarlikeCurve, StarlikeSurface
+from ..common.source import SourcePoints2D
+from ..common.distance import pointwise_distance
+
+from .common import MFSData
 from .polynomial import MFSPolinomials3D, MFSPolinomials2D
 
 @dataclass
@@ -24,7 +27,6 @@ class FundamentalSequence:
         Return the phis mesh in time point n
         """
         return self.phis[n]
-    
 
 @dataclass
 class FundamentalSequenceCoefs:
@@ -35,13 +37,14 @@ class FundamentalSequenceCoefs:
         """
         return self.alpha[n]
 
-def fundamental_sequence_2d(curve: StarlikeCurve, source_points: SourcePoints2D, mfs_data: MfSData, mfs_poly: MFSPolinomials2D) -> FundamentalSequence: #TODO: optimize this function
+def fundamental_sequence_2d(curve: StarlikeCurve, source_points: SourcePoints2D, mfs_data: MFSData, mfs_poly: MFSPolinomials2D) -> FundamentalSequence: #TODO: optimize this function
     '''
         Calculate the fundamental sequence for the 2D problem
         Note: assume that number of collocation points is the same as the number of source points
     '''
     M = curve.collocation.n # number of collocation points
     phis = np.empty((mfs_data.N+1, M, M), dtype=np.float64)
+    # distances = pointwise_distance(curve, source_points.as_boundary())
     for n in range(0, mfs_data.N+1): # N+1 time points    
         phi_vals = np.empty((M, M), dtype=np.float64)
         phi_vals[:] = np.nan
@@ -53,6 +56,25 @@ def fundamental_sequence_2d(curve: StarlikeCurve, source_points: SourcePoints2D,
         phis[n] = phi_vals
     
     return FundamentalSequence(M, phis)
+
+
+
+
+def fs_2d(n: int, arg: np.float64, nu: float, polynomials: MFSPolinomials2D) -> np.float64:
+    """
+    Fundamental solution for the 2D problem
+    """
+    v_poly = polynomials.v_polynomials[n]
+    w_poly = polynomials.w_polynomials[n]
+    return kn(0, nu*arg)*v_poly(arg) + kn(1, nu*arg)*w_poly(arg)
+
+
+def fs_3d(n: int, arg: np.float64, nu: float, mfs_polynomials: MFSPolinomials3D) -> np.float64:
+    """
+    Fundamental solution for the 3D problem
+    """
+    poly = mfs_polynomials.polynomials[n]
+    return (np.exp(-nu*arg)*poly(arg))/arg
 
 # def fundamental_sequence_3d(curve: StarlikeSurface, source_points: SourcePoints2D, mfs_data: MfSData, mfs_poly: MFSPolinomials2D) -> FundamentalSequence: #TODO: optimize this function
 #     '''
@@ -72,17 +94,6 @@ def fundamental_sequence_2d(curve: StarlikeCurve, source_points: SourcePoints2D,
 #         phis[n] = phi_vals
     
 #     return FundamentalSequence(M, phis)
-
-
-def fs_2d(n: int, arg: np.float64, nu: float, polynomials: MFSPolinomials2D) -> np.float64:
-    v_poly = polynomials.v_polynomials[n]
-    w_poly = polynomials.w_polynomials[n]
-    return kn(0, nu*arg)*v_poly(arg) + kn(1, nu*arg)*w_poly(arg)
-
-
-def fs_3d(n: int, arg: np.float64, nu: float, mfs_polynomials: MFSPolinomials3D) -> np.float64:
-    poly = mfs_polynomials.polynomials[n]
-    return (np.exp(-nu*arg)*poly(arg))/arg
 
 # def fs_2d(n: int, x: np.ndarray, y: np.ndarray, nu: float, polynomials: MFSPolinomials2D) -> np.ndarray:
 #     # delta = np.abs(x - y)

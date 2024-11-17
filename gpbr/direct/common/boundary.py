@@ -49,14 +49,12 @@ class StarlikeCurve:
         if isinstance(nums, np.ndarray):
             return StarlikeCurve(self.collocation, [r*p for r,p in zip(nums, self.points)])
         return StarlikeCurve(self.collocation, [p*nums for p in self.points])
-        raise ValueError('Unsupported value type')
     def __rmul__(self, nums):
         # if isinstance(nums, float | np.float64):
         #     return StarlikeCurve(self.collocation, [p*nums for p in self.points])
         if isinstance(nums, np.ndarray):
             return StarlikeCurve(self.collocation, [r*p for r,p in zip(nums, self.points)])
         return StarlikeCurve(self.collocation, [p*nums for p in self.points])
-        raise ValueError('Unsupported value type')
 
 
 @dataclass
@@ -94,7 +92,7 @@ def starlike_curve(r_values: np.array, base: StarlikeCurve) -> StarlikeCurve:
     '''
         Generate a starlike curve from a circle base
     '''
-    return base*r_values
+    return base*r_values ## Note the order. If np.array go first, it will use itself overrided method
 
 ## 3D Mesh
 def starlike_sphere_base(collocation: CollocationData3D) -> StarlikeSurface:

@@ -26,8 +26,6 @@ def form_fs_vector_2d(
         g1: StarlikeCurve,
         g2: StarlikeCurve,
         coeffs: FundamentalSequenceCoefs,
-        # f1_func: Callable[[np.float64, np.float64], np.float64],
-        # f2_func: Callable[[np.float64, np.float64], np.float64],
         f1_func: Callable[[Point2D | Point3D], np.float64],
         f2_func: Callable[[Point2D | Point3D], np.float64],
         mfs_data: MFSData) -> np.ndarray:
@@ -44,22 +42,20 @@ def form_fs_vector_2d(
         for m in range(0, n): # m in [0,...,n-1]
             for j in range(1, M+1):
                 phi_index = n-m
-                # phi1_g1  = g1_sequnce.get(phi_index)
-                phi1_g1  = g1_sequnce[phi_index]
+                phi1_g1 = g1_sequnce[phi_index]
                 right_sum += coeffs.alpha[m, j-1]*phi1_g1[i-1, j-1]
-        # F[i-1] = f1_func([g1.x[i-1], g1.y[i-1]], tn) - right_sum
         F[i-1] = f1_func(g1[i-1], tn) - right_sum
         
         right_sum = 0
         for m in range(0, n): # m in [0,...,n-1]
             for j in range(1, M+1):
                 phi_index = n-m
-                # phi2_g2  = g2_sequnce.get(phi_index)
-                phi2_g2  = g2_sequnce[phi_index]
+                phi2_g2 = g2_sequnce[phi_index]
                 right_sum += coeffs.alpha[m, j-1]*phi2_g2[i-1, j-1]
-        # F[M+i-1] = f2_func(np.linalg.norm([g2.x[i-1], g2.y[i-1]]), tn) - right_sum
         F[M+i-1] = f2_func(g2[i-1], tn) - right_sum
     return F
+
+
 
 # def form_fs_vector(
 #         g1_sequnce: FundamentalSequence,

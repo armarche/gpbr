@@ -9,7 +9,7 @@ from scipy.special import kn
 
 from ..common.boundary import StarlikeCurve, StarlikeSurface
 from ..common.source import SourcePoints2D
-from ..common.distance import pointwise_distance
+from ..common.distance import point_distance
 
 from .common import MFSData
 from .polynomial import MFSPolinomials3D, MFSPolinomials2D
@@ -22,8 +22,14 @@ class FundamentalSequence:
     """
     M: int
     phis: np.ndarray
+    def __getitem__(self, n:int) -> np.ndarray:
+        """
+        Return the phis mesh in time point n
+        """
+        return self.phis[n]
     def get(self, n: int) -> np.ndarray:# Phis mesh in time point n
         """
+        DEPRECATED
         Return the phis mesh in time point n
         """
         return self.phis[n]
@@ -31,8 +37,14 @@ class FundamentalSequence:
 @dataclass
 class FundamentalSequenceCoefs:
     alpha: np.ndarray
+    def __getitem__(self, n:int) -> np.ndarray:
+        """
+        Return alpha coefficients in time point n
+        """
+        return self.alpha[n]
     def get(self, n: int) -> np.array:
         """
+        DEPRECATED
         Return alpha coefficients in time point n
         """
         return self.alpha[n]
@@ -50,8 +62,10 @@ def fundamental_sequence_2d(curve: StarlikeCurve, source_points: SourcePoints2D,
         phi_vals[:] = np.nan
         for i in range(0, M): # i = 1, ..., M
             for j in range(0, M): # j = 1, ..., M
-                x, y = source_points.get_point(j)
-                delta = linalg.norm([curve.x[i]-x, curve.y[i]-y])
+                # point = source_points.get_point(j)
+                # x, y = source_points.get_point(j)
+                # delta = linalg.norm([curve.x[i]-x, curve.y[i]-y])
+                delta = point_distance(curve[i], source_points[j])
                 phi_vals[i, j] = fs_2d(n, delta, mfs_data.nu, mfs_poly)
         phis[n] = phi_vals
     

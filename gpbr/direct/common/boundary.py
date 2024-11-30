@@ -48,13 +48,18 @@ class StarlikeCurve:
     def __mul__(self, nums):
         if isinstance(nums, np.ndarray):
             return StarlikeCurve(self.collocation, [r*p for r,p in zip(nums, self.points)])
-        return StarlikeCurve(self.collocation, [p*nums for p in self.points])
+        elif isinstance(nums, (float, np.float64)):
+            return StarlikeCurve(self.collocation, [p*nums for p in self.points])
+        else:
+            raise TypeError(f"Unsupported type for multiplication: {type(nums)}")
+
     def __rmul__(self, nums):
-        # if isinstance(nums, float | np.float64):
-        #     return StarlikeCurve(self.collocation, [p*nums for p in self.points])
         if isinstance(nums, np.ndarray):
             return StarlikeCurve(self.collocation, [r*p for r,p in zip(nums, self.points)])
-        return StarlikeCurve(self.collocation, [p*nums for p in self.points])
+        elif isinstance(nums, (float, np.float64)):
+            return StarlikeCurve(self.collocation, [p*nums for p in self.points])
+        else:
+            raise TypeError(f"Unsupported type for multiplication: {type(nums)}")
 
 
 @dataclass
@@ -76,7 +81,7 @@ class StarlikeSurface:
     def from_raw_points(collocation: CollocationData3D, x: np.array, y: np.array, z: np.array):
         if not np.shape(x) == np.shape(y) == np.shape(z):
             raise ValueError('Shape of x, y, and z arrays missmatch!')
-        return StarlikeCurve(collocation, [Point3D(a,b,c) for a,b,c in zip(x,y,z)])
+        return StarlikeSurface(collocation, [Point3D(a,b,c) for a,b,c in zip(x,y,z)])
 
 ## 2D
 def starlike_circle_base(collocation: CollocationData2D) -> StarlikeCurve:
@@ -106,7 +111,7 @@ def starlike_sphere_base(collocation: CollocationData3D) -> StarlikeSurface:
 
 def starlike_surface(r_grid: np.ndarray, collocation: CollocationData3D) -> StarlikeSurface:
     '''
-        Generate a sphere mesh of radius one
+        Generate a stralike surface from a sphere base
     '''
     x = (r_grid * np.sin(collocation.theta_grid) * np.cos(collocation.phi_grid)).ravel()
     y = (r_grid * np.sin(collocation.theta_grid) * np.sin(collocation.phi_grid)).ravel()

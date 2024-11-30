@@ -4,7 +4,8 @@ Fundamental sequence for the elliptic equations
 from dataclasses import dataclass
 import numpy as np
 from numpy import linalg
-from scipy.special import kn
+# from scipy.special import kn
+from scipy.special import k0, k1
 
 
 from ..common.boundary import StarlikeCurve, StarlikeSurface
@@ -80,7 +81,7 @@ def fs_2d(n: int, arg: np.float64, nu: float, polynomials: MFSPolinomials2D) -> 
     """
     v_poly = polynomials.v_polynomials[n]
     w_poly = polynomials.w_polynomials[n]
-    return kn(0, nu*arg)*v_poly(arg) + kn(1, nu*arg)*w_poly(arg)
+    return k0(nu*arg)*v_poly(arg) + k1(nu*arg)*w_poly(arg)
 
 
 def fs_3d(n: int, arg: np.float64, nu: float, mfs_polynomials: MFSPolinomials3D) -> np.float64:

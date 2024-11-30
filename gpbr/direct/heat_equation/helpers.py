@@ -59,7 +59,6 @@ def form_fs_vector_2d(
     return F
 
 
-
 def u_2d(x: Point2D | Point3D, source_points: SourcePoints2D, fs_coefs: FundamentalSequenceCoefs, poly_2d: MFSPolinomials2D, mfs_data: MFSData ):
     u = 0.0
     for m in range(0, mfs_data.N+1): # m = 0,...,N

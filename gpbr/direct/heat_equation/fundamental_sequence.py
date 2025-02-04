@@ -63,9 +63,6 @@ def fundamental_sequence_2d(curve: StarlikeCurve, source_points: SourcePoints2D,
         phi_vals[:] = np.nan
         for i in range(0, M): # i = 1, ..., M
             for j in range(0, M): # j = 1, ..., M
-                # point = source_points.get_point(j)
-                # x, y = source_points.get_point(j)
-                # delta = linalg.norm([curve.x[i]-x, curve.y[i]-y])
                 delta = point_distance(curve[i], source_points[j])
                 phi_vals[i, j] = fs_2d(n, delta, mfs_data.nu, mfs_poly)
         phis[n] = phi_vals

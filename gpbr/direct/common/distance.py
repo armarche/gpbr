@@ -9,7 +9,7 @@ def point_distance(p1: Point2D | Point3D, p2: Point2D | Point3D | None = None) -
     if isinstance(p1, Point2D):
         p2 = p2 if p2 is not None else Point2D(0,0)
         return np.linalg.norm([p1.x-p2.x, p1.y-p2.y])
-    if isinstance(p1, Point2D):
+    if isinstance(p1, Point3D):
         p2 = p2 if p2 is not None else Point3D(0,0,0)
         return np.linalg.norm([p1.x-p2.x, p1.y-p2.y, p1.z-p2.z])
 

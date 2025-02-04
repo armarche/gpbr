@@ -3,12 +3,15 @@ MFS helpers
 """
 
 from collections.abc import Callable
-from dataclasses import dataclass
-from typing import Union
+
+from ..common.distance import point_distance
+
+from ..common.source import SourcePoints2D
+from .polynomial import MFSPolinomials2D
 
 from ..common.boundary import Point2D, Point3D, StarlikeCurve
 from .common import MFSData
-from .fundamental_sequence import FundamentalSequence, FundamentalSequenceCoefs
+from .fundamental_sequence import FundamentalSequence, FundamentalSequenceCoefs, fs_2d
 import numpy as np
 
 def form_fs_matrix(g1_sequnce: FundamentalSequence, g2_sequnce: FundamentalSequence) -> np.ndarray:
@@ -56,6 +59,45 @@ def form_fs_vector_2d(
     return F
 
 
+def u_2d(x: Point2D | Point3D, n: int, source_points: SourcePoints2D, fs_coefs: FundamentalSequenceCoefs, poly_2d: MFSPolinomials2D, mfs_data: MFSData ):
+    """
+     u(x,t_n) = u_n,M(x), x \in D
+     n = 0,...,N - time point
+    """
+    u = 0.0
+    alpha_n = fs_coefs[n]
+    for m in range(0, n+1): # m = 0,...,n
+        print(f"m = {m}")
+        for j in range(0, mfs_data.M): # j =1,...,M
+            delta = point_distance(x, source_points[j])
+            u+= alpha_n[j]*fs_2d(n-m, delta, mfs_data.nu, poly_2d)
+    
+    return u
+
+#     for m in range(0, mfs_data.N+1): # m = 0,...,N
+#         alpha_n = fs_coefs[m]
+#         for j in range(0, mfs_data.M): # j =1,...,M
+#             delta = point_distance(x, source_points[j])
+#             u+= alpha_n[j]*fs_2d(m, delta, mfs_data.nu, poly_2d)
+
+#     return u
+
+
+# def du_2d(x: Point2D | Point3D, source_points: SourcePoints2D, fs_coefs: FundamentalSequenceCoefs, poly_2d: MFSPolinomials2D, mfs_data: MFSData ):
+#     u = 0.0
+#     for m in range(0, mfs_data.N+1): # m = 0,...,N
+#         alpha_n = fs_coefs[m]
+#         for j in range(0, mfs_data.M): # j =1,...,M
+#             delta = point_distance(x, source_points[j])
+#             u+= alpha_n[j]*fs_2d(m, delta, mfs_data.nu, poly_2d)
+
+#     return u
+
+
+
+
+
+
 
 # def form_fs_vector(
 #         g1_sequnce: FundamentalSequence,
@@ -82,7 +124,7 @@ def form_fs_vector_2d(
 #                     phi_index = n-m
 #                     phi_g1 = g1_sequnce.get(phi_index)
 #                     right_sum += coeffs.alpha[m, j-1]*phi_g1[i-1, j-1]
-#             F[i-1] = f1_func([g1.x[i-1], g1.y[i-1]], tn[n]) - right_sum
+#  ]           F[i-1] = f1_func([g1.x[i-1], g1.y[i-1]], tn[n]) - right_sum
 
 #             right_sum = 0
 #             for m in range(0, n): # m in [0,...,n-1]

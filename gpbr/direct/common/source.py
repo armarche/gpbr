@@ -28,14 +28,7 @@ class SourcePoints2D:
             return self.gart2.points[j]
         else:
             return self.gart1.points[j - self.M//2]
-        # if j < self.M//2:
-        #     return np.array([self.gart1.x[j], self.gart1.y[j]])
-        # else:
-        #     return np.array([self.gart2.x[j - self.M//2], self.gart2.y[j - self.M//2]])
-        if j < self.M//2:
-            return np.array([self.gart2.x[j], self.gart2.y[j]])
-        else:
-            return np.array([self.gart1.x[j - self.M//2], self.gart1.y[j - self.M//2]])
+
     def as_boundary(self) -> StarlikeCurve:
         '''
             Return the combined boundary

@@ -83,6 +83,18 @@ class StarlikeSurface:
             raise ValueError('Shape of x, y, and z arrays missmatch!')
         return StarlikeSurface(collocation, [Point3D(a,b,c) for a,b,c in zip(x,y,z)])
 
+    def __mul__(self, nums):
+        if isinstance(nums, (float, np.float64)):
+            return StarlikeSurface(self.collocation, [p*nums for p in self.points])
+        else:
+            raise TypeError(f"Unsupported type for multiplication: {type(nums)}")
+
+    def __rmul__(self, nums):
+        if isinstance(nums, (float, np.float64)):
+            return StarlikeSurface(self.collocation, [p*nums for p in self.points])
+        else:
+            raise TypeError(f"Unsupported type for multiplication: {type(nums)}")
+
 ## 2D
 def starlike_circle_base(collocation: CollocationData2D) -> StarlikeCurve:
     '''

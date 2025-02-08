@@ -50,3 +50,41 @@ def source_points_2d(
     # g1 = StarlikeCurve(curve1.collocation, eta1*curve1.x, eta1*curve1.y)
     # g2 = StarlikeCurve(curve2.collocation, eta2*curve2.x, eta2*curve2.y)
     return SourcePoints2D(M, eta1, eta2, curve1*eta1, curve2*eta2)
+##################
+
+@dataclass
+class SourcePoints3D:
+    M: int # Even number of source points
+    eta1: np.float64
+    eta2: np.float64
+    gart1: StarlikeSurface # Gamma1 artificial boundary
+    gart2: StarlikeSurface # Gamma2 artificial boundary
+    def __getitem__(self, j:int):
+        '''
+            Return the j-th source point
+        '''
+        # M = 2*m1*m2
+        return self.gart2[j]  if j < self.M//2 else self.gart1[j - self.M//2]
+
+    def as_boundary(self) -> StarlikeSurface:
+        '''
+            Return the combined boundary
+        '''
+        return StarlikeSurface(self.gart1.collocation, [*self.gart1.points, *self.gart2.points])
+        # return StarlikeCurve(self.gart1.collocation, np.concatenate((self.gart1.x, self.gart2.x)), np.concatenate((self.gart1.y, self.gart2.y)))
+        
+
+def source_points_3d(
+        eta1: np.float64,
+        eta2: np.float64,
+        surface1: StarlikeSurface,
+        surface2: StarlikeSurface) -> SourcePoints3D:
+    '''
+        Generate the source points for the MFS in 3D
+        Note that we calculate source points in the same collocation points
+    '''
+    # Assume that the number of points in each surface is the same
+    M = 2*(surface1.collocation.n_phi*surface1.collocation.n_theta)
+    # g1 = StarlikeCurve(curve1.collocation, eta1*curve1.x, eta1*curve1.y)
+    # g2 = StarlikeCurve(curve2.collocation, eta2*curve2.x, eta2*curve2.y)
+    return SourcePoints3D(M, eta1, eta2, surface1*eta1, surface2*eta2)

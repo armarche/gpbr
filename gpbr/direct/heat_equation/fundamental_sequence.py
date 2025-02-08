@@ -68,6 +68,24 @@ def fundamental_sequence_2d(curve: StarlikeCurve, source_points: SourcePoints2D,
         phis[n] = phi_vals
     
     return FundamentalSequence(M, phis)
+    
+def fundamental_sequence_3d(surface: StarlikeCurve, source_points: SourcePoints2D, mfs_data: MFSData, mfs_poly: MFSPolinomials3D) -> FundamentalSequence: #TODO: optimize this function
+    '''
+        Calculate the fundamental sequence for the 3D problem
+        Note: assume that number of collocation points is the same as the number of source points
+    '''
+    M = mfs_data.M
+    phis = np.empty((mfs_data.N+1, M, M), dtype=np.float64)
+    for n in range(0, mfs_data.N+1): # N+1 time points    
+        phi_vals = np.empty((M, M), dtype=np.float64)
+        phi_vals[:] = np.nan
+        for i in range(0, M): # i = 1, ..., M
+            for j in range(0, M): # j = 1, ..., M
+                delta = point_distance(surface[i], source_points[j])
+                phi_vals[i, j] = fs_3d(n, delta, mfs_data.nu, mfs_poly)
+        phis[n] = phi_vals
+    
+    return FundamentalSequence(M, phis)
 
 
 

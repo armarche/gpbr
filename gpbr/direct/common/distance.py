@@ -7,11 +7,17 @@ from .boundary import Point2D, Point3D, StarlikeCurve, StarlikeSurface
 
 def point_distance(p1: Point2D | Point3D, p2: Point2D | Point3D | None = None) -> float:
     if isinstance(p1, Point2D):
-        p2 = p2 if p2 is not None else Point2D(0,0)
-        return np.linalg.norm([p1.x-p2.x, p1.y-p2.y])
-    if isinstance(p1, Point3D):
-        p2 = p2 if p2 is not None else Point3D(0,0,0)
-        return np.linalg.norm([p1.x-p2.x, p1.y-p2.y, p1.z-p2.z])
+        return np.sqrt((p1.x-p2.x)**2 + (p1.y-p2.y)**2)
+        # return np.linalg.norm([p1.x-p2.x, p1.y-p2.y])
+    # if isinstance(p1, Point3D):
+    #     return np.linalg.norm([p1.x-p2.x, p1.y-p2.y, p1.z-p2.z])
+# def point_distance(p1: Point2D | Point3D, p2: Point2D | Point3D | None = None) -> float:
+#     if isinstance(p1, Point2D):
+#         p2 = p2 if p2 is not None else Point2D(0,0)
+#         return np.linalg.norm([p1.x-p2.x, p1.y-p2.y])
+#     if isinstance(p1, Point3D):
+#         p2 = p2 if p2 is not None else Point3D(0,0,0)
+#         return np.linalg.norm([p1.x-p2.x, p1.y-p2.y, p1.z-p2.z])
 
 
 def boundary_pointwise_distance(starlike1: StarlikeCurve | StarlikeSurface, starlike2: StarlikeCurve | StarlikeSurface) -> np.array:

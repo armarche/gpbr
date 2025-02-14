@@ -4,7 +4,6 @@ The distance module contains functions to calculate the distance between two poi
 import numpy as np
 from .boundary import Point2D, Point3D, StarlikeCurve, StarlikeSurface
 
-
 def point_distance(p1: Point2D | Point3D, p2: Point2D | Point3D | None = None) -> float:
     if isinstance(p1, Point2D):
         p2 = p2 if p2 is not None else Point2D(0,0)

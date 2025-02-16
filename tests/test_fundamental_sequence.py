@@ -5,7 +5,7 @@ from gpbr.direct.common.boundary import Point2D, StarlikeCurve
 from gpbr.direct.common.collocation import CollocationData2D
 from gpbr.direct.common.source import SourcePoints2D
 from gpbr.direct.common.distance import point_distance
-from gpbr.direct.heat_equation.common import MFSData
+from gpbr.direct.heat_equation.common import MFSConfig, MFSData
 from gpbr.direct.heat_equation.polynomial import MFSPolinomials2D, MFSPolinomials3D, calculate_2d_polinomials
 
 from gpbr.direct.heat_equation.fundamental_sequence import (
@@ -15,30 +15,21 @@ from gpbr.direct.heat_equation.fundamental_sequence import (
 class TestFundamentalSequence(unittest.TestCase):
 
     def setUp(self):
-        # self.M = 5
-        # self.N = 10
-        # self.phis = np.random.rand(self.N+1, self.M, self.M)
-        # self.alpha = np.random.rand(self.N+1, self.M, self.M)
-        # self.fund_seq = FundamentalSequence(self.M, self.phis)
-        # self.fund_seq_coefs = FundamentalSequenceCoefs(self.alpha)
-        T = 2 # final time
-        N = 9 # N+1=10 time points
-        M = 8 # number of collocation points
-        tn = np.array([0.2, 0.4, 0.6, 0.8, 1. , 1.2, 1.4, 1.6, 1.8, 2. ])
-        h = T/(N+1)
-        nu = np.sqrt(2/h)
-        beta_array = np.array([np.nan, -20.0, 20.0, -20.0, 20.0, -20.0, 20.0, -20.0, 20.0, -20.0])
-    
-        self.mfs_data = MFSData(
-            N=N,
-            T=T,
-            tn=tn,
-            M=M,
-            Beta=beta_array,
-            nu=nu
+        # Random values
+        self.config = MFSConfig(
+            N=np.int32(10),
+            T=np.float64(1.0),
+            n_coll=np.int64(5),
+            n_source=np.int64(5),
+            f1=lambda p: np.float64(p.x + p.y),
+            f2=lambda p: np.float64(p.x - p.y),
+            eta1=np.float64(0.5),
+            eta2=np.float64(0.25)
         )
-        self.N = N
-        polynomials = calculate_2d_polinomials(self.mfs_data, self.N)
+        self.h = np.float64(0.1)
+        self.tn = np.array([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+        self.Beta = np.array([1.0, 0.5, 0.25, 0.125, 0.0625, 0.11, 0.22, 0.33, 0.44, 0.55, 0.11, 0.22])
+        self.nu = np.float64(1.0)
 
     # def test_fundamental_sequence_getitem(self):
     #     for n in range(self.N+1):
@@ -59,16 +50,16 @@ class TestFundamentalSequence(unittest.TestCase):
     def test_fundamental_sequence_2d_zero_is_k0(self):
         x = Point2D(0.25,1.75)
         y = Point2D(2.33,3.81)
-        polynomials = calculate_2d_polinomials(self.mfs_data, self.N)
-        actual = fs_2d(0,point_distance(x,y), self.mfs_data.nu, polynomials)
-        self.assertAlmostEqual(actual, k0(self.mfs_data.nu*point_distance(x,y)))
+        polynomials = calculate_2d_polinomials(self.config.N, self.nu, self.Beta)
+        actual = fs_2d(0,x,y, self.nu, polynomials)
+        self.assertAlmostEqual(actual, k0(self.nu*point_distance(x,y)))
 
     def test_fundamental_sequence_2d_zero_is_k0(self):
         x = Point2D(0.25,1.75)
         y = Point2D(2.33,3.81)
-        polynomials = calculate_2d_polinomials(self.mfs_data, self.N)
-        actual = fs_2d(0,point_distance(x,y), self.mfs_data.nu, polynomials)
-        self.assertAlmostEqual(actual, k0(self.mfs_data.nu*point_distance(x,y)))
+        polynomials = calculate_2d_polinomials(self.config.N, self.nu, self.Beta)
+        actual = fs_2d(0,x,y, self.nu, polynomials)
+        self.assertAlmostEqual(actual, k0(self.nu*point_distance(x,y)))
 
 
 

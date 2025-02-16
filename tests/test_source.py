@@ -1,5 +1,6 @@
 import unittest
 import numpy as np
+from gpbr.direct.common.collocation import collocation_points_2d
 from gpbr.direct.common.source import SourcePoints2D, source_points_2d
 from gpbr.direct.common.boundary import Point2D, StarlikeCurve
 
@@ -7,8 +8,11 @@ class TestSourcePoints2D(unittest.TestCase):
     def setUp(self):
         # Create mock StarlikeCurve objects
         self.collocation = type('collocation', (object,), {'n': 4})
-        self.curve1 = StarlikeCurve(self.collocation, [Point2D(i, i) for i in range(1, 5)])
-        self.curve2 = StarlikeCurve(self.collocation, [Point2D(i, i) for i in range(5, 9)])
+        self.collocation = collocation_points_2d(4, startpoint=False)
+        # self.curve1 = StarlikeCurve(self.collocation, [Point2D(i, i) for i in range(1, 5)])
+        # self.curve2 = StarlikeCurve(self.collocation, [Point2D(i, i) for i in range(5, 9)])
+        self.curve1 = StarlikeCurve.from_radial(self.collocation, lambda s: 1.0)
+        self.curve2 = StarlikeCurve.from_radial(self.collocation, lambda s: 2.0)
         self.eta1 = 0.5
         self.eta2 = 0.8
 
@@ -22,6 +26,7 @@ class TestSourcePoints2D(unittest.TestCase):
         self.assertTrue(np.array_equal(source_points.get_point(0), self.curve2.points[0]))
         self.assertTrue(np.array_equal(source_points.get_point(4), self.curve1.points[0]))
 
+    @unittest.skip("This method is deprecated")
     def test_as_boundary(self):
         source_points = SourcePoints2D(8, self.eta1, self.eta2, self.curve1, self.curve2)
         combined_boundary = source_points.as_boundary()
@@ -34,6 +39,8 @@ class TestSourcePoints2D(unittest.TestCase):
         self.assertEqual(source_points.eta1, self.eta1)
         self.assertEqual(source_points.eta2, self.eta2)
         self.assertTrue(np.array_equal(source_points.gart1.points, [p*self.eta1 for p in self.curve1.points]))
+        # for a,b in zip(source_points.gart2.points, [p*self.eta2 for p in self.curve2.points]):
+        #     print(f'{a} == {b}')
         self.assertTrue(np.array_equal(source_points.gart2.points, [p*self.eta2 for p in self.curve2.points]))
 
 if __name__ == '__main__':

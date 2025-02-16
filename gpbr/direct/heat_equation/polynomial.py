@@ -6,7 +6,6 @@ import numpy as np
 from numpy.polynomial.polynomial import polyval
 from numpy.polynomial import Polynomial
 from collections.abc import Callable
-from .common import MFSData
 
 @dataclass
 class MFSPolinomials3D:
@@ -38,7 +37,7 @@ class MFSPolinomials2D:
     v_polynomials: np.ndarray[Polynomial]
     w_polynomials: np.ndarray[Polynomial]
 
-def calculate_polinomials_coefs(coefs_func: Callable[[int, int, np.ndarray], np.float64], mfs_data: MFSData, N: int) -> MFSPolinomials3D:
+def calculate_polinomials_coefs(coefs_func: Callable[[int, int, np.ndarray], np.float64], N: int, nu: float, betas: np.ndarray) -> MFSPolinomials3D:
     # a_nm, n=0,1,...N, m =0,1,...n
     A = np.empty((N+1,N+1))
 
@@ -50,35 +49,33 @@ def calculate_polinomials_coefs(coefs_func: Callable[[int, int, np.ndarray], np.
 
     ## Fill diagonal elements
     for n in range(1,N+1):
-        A[n,n] = -(mfs_data.Beta[1]*A[n-1,n-1])/(2*mfs_data.nu*n)
+        A[n,n] = -(betas[1]*A[n-1,n-1])/(2*nu*n)
 
     for n in range(N+1):
         for m in range(n-1, 0, -1):
             A[n,m] = coefs_func(n,m,A)
     return A
 
-def calculate_3d_polinomials(mfs_data: MFSData, N: int) -> MFSPolinomials3D:
+def calculate_3d_polinomials(N: int, nu:float, betas: np.array) -> MFSPolinomials3D:
     def polinomial_coeff_3d(n: int,k:int, A: np.ndarray) -> np.float64:
         res = k*(k+1)*A[n,k+1]
         for m in range(k-1, n): # m = k-1;n-1
-            res -=mfs_data.Beta[n-m]*A[m, k-1] # TODO: test beta
-        res /=(2*mfs_data.nu*k)
+            res -=betas[n-m]*A[m, k-1] # TODO: test beta
+        res /=(2*nu*k)
         return res
-    A = calculate_polinomials_coefs(polinomial_coeff_3d, mfs_data, N)
+    A = calculate_polinomials_coefs(polinomial_coeff_3d, N, nu, betas)
     polinomials = np.array([Polynomial(A[n,:n+1]) for n in range(N+1)], dtype=Polynomial)
     return MFSPolinomials3D(A, polinomials)
 
-def calculate_2d_polinomials(mfs_data: MFSData, N: int) -> MFSPolinomials2D:
+def calculate_2d_polinomials(N: int, nu: float, betas: np.ndarray) -> MFSPolinomials2D:
     def polinomial_coeff_2d(n: int,k:int, A: np.ndarray) -> np.float64:
-        # res = (4*np.trunc((k+1)/2)**2)*A[n,k+1]
-        # res = (4*int((k+1)/2)**2)*A[n,k+1]
         res = (4*((k+1)//2)**2)*A[n,k+1]
         for m in range(k-1, n): # m = k-1;n-1
-            res -=mfs_data.Beta[n-m]*A[m, k-1] # TODO: test beta
-        res /=(2*mfs_data.nu*k)
+            res -=betas[n-m]*A[m, k-1] # TODO: test beta
+        res /=(2*nu*k)
         return res
 
-    A = calculate_polinomials_coefs(polinomial_coeff_2d, mfs_data, N)
+    A = calculate_polinomials_coefs(polinomial_coeff_2d, N, nu, betas)
     v_polynomials = [Polynomial([1])] # v_0(r)=1
     w_polynomials = [Polynomial([0])] # w_0(r)=0
 

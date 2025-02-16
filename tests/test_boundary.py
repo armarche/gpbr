@@ -22,9 +22,10 @@ class TestBoundary(unittest.TestCase):
     def test_starlike_curve(self):
         n = 100
         collocation = CollocationData2D(n=n, theta=np.linspace(0, 2*np.pi, n))
-        base_curve = starlike_circle_base(collocation)
-        r_values = np.ones(n)
-        curve = starlike_curve(r_values, base_curve)
+        curve = StarlikeCurve.from_radial(collocation, lambda s: 1.0)
+        # base_curve = starlike_circle_base(collocation)
+        # r_values = np.ones(n)
+        # curve = starlike_curve(r_values, base_curve)
         x, y = curve.raw_points()
         np.testing.assert_almost_equal(x, np.cos(collocation.theta))
         np.testing.assert_almost_equal(y, np.sin(collocation.theta))

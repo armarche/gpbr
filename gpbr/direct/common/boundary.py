@@ -1,3 +1,4 @@
+from typing import Callable
 import numpy as np
 from dataclasses import dataclass
 from .collocation import CollocationData2D, CollocationData3D
@@ -9,6 +10,8 @@ class Point2D:
     y: float
     def __mul__(self, num: float):
         return Point2D(self.x*num, self.y*num)
+    def __add__(self, point):
+        return Point2D(self.x+point.x, self.y+point.y)
     def __rmul__(self, num: float):
         return Point2D(self.x*num, self.y*num)
     def __sub__(self, point):
@@ -26,12 +29,87 @@ class Point3D:
     def __sub__(self, point):
         return Point3D(self.x-point.x, self.y-point.y, self.z-point.z)
 
-@dataclass
+# @dataclass
+# class StarlikeCurve:
+#     rf: Callable[[float], float]
+#     collocation: CollocationData2D
+#     points: list[Point2D]
+#     def __getitem__(self, index:int):
+#         return self.points[index]
+#     def raw_points(self):
+#         """Unpacks the list of 2D points into separate lists of x and y coordinates.
+
+#         Returns:
+#             tuple: A tuple of two lists, (x, y).
+#         """
+#         return np.array([point.x for point in self.points]), \
+#                np.array([point.y for point in self.points])
+#     @staticmethod
+#     def from_raw_points(collocation: CollocationData2D, x: np.array, y: np.array):
+#         if np.shape(x) != np.shape(y):
+#             raise ValueError('Shape of x and y arrays missmatch!')
+#         return StarlikeCurve(collocation, [Point2D(a,b) for a,b in zip(x,y)])
+#     def __mul__(self, nums):
+#         if isinstance(nums, np.ndarray):
+#             return StarlikeCurve(self.collocation, [r*p for r,p in zip(nums, self.points)])
+#         elif isinstance(nums, (float, np.float64)):
+#             return StarlikeCurve(self.collocation, [p*nums for p in self.points])
+#         else:
+#             raise TypeError(f"Unsupported type for multiplication: {type(nums)}")
+
+#     def __rmul__(self, nums):
+#         if isinstance(nums, np.ndarray):
+#             return StarlikeCurve(self.collocation, [r*p for r,p in zip(nums, self.points)])
+#         elif isinstance(nums, (float, np.float64)):
+#             return StarlikeCurve(self.collocation, [p*nums for p in self.points])
+#         else:
+#             raise TypeError(f"Unsupported type for multiplication: {type(nums)}")
+@dataclass(frozen=True)
 class StarlikeCurve:
+    rf: Callable[[float], float]
+    drf: Callable[[float], float]
     collocation: CollocationData2D
     points: list[Point2D]
+    normals: list[Point2D] | None = None
+    @staticmethod
+    def from_radial(collocation: CollocationData2D, rf: Callable[[float], float]):
+        return StarlikeCurve(rf, None, collocation, [Point2D(rf(theta)*np.cos(theta), rf(theta)*np.sin(theta)) for theta in collocation.theta], None)
+
+    @staticmethod
+    def from_radial_with_derivative(collocation: CollocationData2D, rf: Callable[[float], float], drf: Callable[[float], float]):
+        points = np.empty(collocation.n, dtype=Point2D)
+        normals = np.empty(collocation.n, dtype=Point2D)
+        for i, theta in enumerate(collocation.theta):
+            points[i] = Point2D(rf(theta)*np.cos(theta), rf(theta)*np.sin(theta))
+            tangent = Point2D(-np.sin(theta), np.cos(theta)) * rf(theta) + Point2D(np.cos(theta), np.sin(theta)) * drf(theta)
+            normal = Point2D(tangent.y, -tangent.x) ## Outward normal
+            # norm = np.sqrt(rf(theta)**2 + drf(theta)**2)
+            norm = np.sqrt(normal.x**2 + normal.y**2)
+            normals[i] = Point2D(normal.x / norm, normal.y / norm)    
+
+        return StarlikeCurve(rf, drf, collocation, points, normals)
+
     def __getitem__(self, index:int):
         return self.points[index]
+    
+    def __call__(self, s):
+        return Point2D(np.cos(s), np.sin(s))*self.rf(s)
+
+    def normal(self, s):
+        """Calculate the normal vector at a given parameter s.
+
+        Args:
+            s (float): The parameter at which to calculate the normal vector.
+
+        Returns:
+            Point2D: The normal vector at the given parameter.
+        """
+        tangent = Point2D(-np.sin(s), np.cos(s)) * self.rf(s) + Point2D(np.cos(s), np.sin(s)) * self.drf(s)
+        normal = Point2D(tangent.y, -tangent.x) ## Outward normal
+        # norm = np.sqrt(normal.x**2 + normal.y**2)
+        norm = np.sqrt(self.rf(s)**2 + self.drf(s)**2)
+        return Point2D(normal.x / norm, normal.y / norm)    
+
     def raw_points(self):
         """Unpacks the list of 2D points into separate lists of x and y coordinates.
 
@@ -40,27 +118,6 @@ class StarlikeCurve:
         """
         return np.array([point.x for point in self.points]), \
                np.array([point.y for point in self.points])
-    @staticmethod
-    def from_raw_points(collocation: CollocationData2D, x: np.array, y: np.array):
-        if np.shape(x) != np.shape(y):
-            raise ValueError('Shape of x and y arrays missmatch!')
-        return StarlikeCurve(collocation, [Point2D(a,b) for a,b in zip(x,y)])
-    def __mul__(self, nums):
-        if isinstance(nums, np.ndarray):
-            return StarlikeCurve(self.collocation, [r*p for r,p in zip(nums, self.points)])
-        elif isinstance(nums, (float, np.float64)):
-            return StarlikeCurve(self.collocation, [p*nums for p in self.points])
-        else:
-            raise TypeError(f"Unsupported type for multiplication: {type(nums)}")
-
-    def __rmul__(self, nums):
-        if isinstance(nums, np.ndarray):
-            return StarlikeCurve(self.collocation, [r*p for r,p in zip(nums, self.points)])
-        elif isinstance(nums, (float, np.float64)):
-            return StarlikeCurve(self.collocation, [p*nums for p in self.points])
-        else:
-            raise TypeError(f"Unsupported type for multiplication: {type(nums)}")
-
 
 @dataclass
 class StarlikeSurface:

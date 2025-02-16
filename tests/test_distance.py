@@ -28,8 +28,8 @@ class TestDistanceFunctions(unittest.TestCase):
             def raw_points(self):
                 return np.array([1, 2]), np.array([3, 4])
 
-        starlike1 = MockStarlikeCurve(None, None)
-        starlike2 = MockStarlikeCurve(None, None)
+        starlike1 = MockStarlikeCurve(None, None, None, None)
+        starlike2 = MockStarlikeCurve(None, None, None, None)
         np.testing.assert_almost_equal(boundary_pointwise_distance(starlike1, starlike2), np.array([0, 0]))
 
     def test_boundary_pointwise_distance_surface(self):

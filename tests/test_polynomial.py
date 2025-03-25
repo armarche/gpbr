@@ -31,11 +31,9 @@ class TestPolynomials(unittest.TestCase):
         )
         self.mfs_data = precalculate_mfs_data(config)
 
-    @unittest.skip("3D not yet implemented")
     def test_3d_polinomials_satisfy_differentiation_equation(self):
-        polynomials = calculate_3d_polinomials(self.mfs_data)
-        points = np.arange(0, 20)
-        points
+        polynomials = calculate_3d_polinomials(self.mfs_data.N, self.mfs_data.nu, self.mfs_data.Beta)
+        points = np.linspace(-1,1, 500) ## Note, the wider the range, the higher the error. Not sure if it is correct
 
         for n, polinomial in enumerate(polynomials.polynomials):
             dv = polinomial.deriv()(points)
@@ -44,35 +42,34 @@ class TestPolynomials(unittest.TestCase):
             for m in range(n):
                 right += self.mfs_data.Beta[n-m]*polynomials.polynomials[m](points)
             difference = d2v - 2*self.mfs_data.nu*dv - right
-            ## Note: for the polynomial of degree 10, there is a difference of 1e-4
-            ## Not sure, if it is a numerical error or a bug
-            self.assertTrue(np.allclose(difference, 0, atol=1e-4))
-    @unittest.skip("3D not yet implemented")
+            # print(max(abs(difference)))
+            self.assertTrue(np.allclose(difference, 0, atol=1e-8))
+
     def test_3d_polinomials_coefficient_first_column_ones(self):
-        polynomials = calculate_3d_polinomials(self.mfs_data)
+        polynomials = calculate_3d_polinomials(self.mfs_data.N, self.mfs_data.nu, self.mfs_data.Beta)
         print(polynomials.A[:, 0])
         self.assertTrue(np.allclose(polynomials.A[:, 0], 1.0))
-    @unittest.skip("3D not yet implemented")
+
     def test_3d_polinomials_diagonal_coefficients(self):
         def calc_diagonal(n, nu, beta1):
             if n == 0:
                 return 1.0
             return -1.0/(2*nu*n)*beta1*calc_diagonal(n-1, nu, beta1)
 
-        vals = np.empty(self.N+1)
+        vals = np.empty(self.mfs_data.N+1)
         vals[:] = np.nan
-        for n in range(self.N+1):
+        for n in range(self.mfs_data.N+1):
             vals[n] = calc_diagonal(n, self.mfs_data.nu, self.mfs_data.Beta[1])
 
-        polynomials = calculate_3d_polinomials(self.mfs_data)
+        polynomials = calculate_3d_polinomials(self.mfs_data.N, self.mfs_data.nu, self.mfs_data.Beta)
         self.assertTrue(np.allclose(polynomials.A.diagonal(), vals))
-    @unittest.skip("3D not yet implemented")
+
     def test_3d_polinomials_coefficient_matrix_shape(self):
-        polynomials = calculate_3d_polinomials(self.mfs_data)
-        self.assertEqual(polynomials.A.shape, (self.N+1, self.N+1))
-    @unittest.skip("3D not yet implemented")
+        polynomials = calculate_3d_polinomials(self.mfs_data.N, self.mfs_data.nu, self.mfs_data.Beta)
+        self.assertEqual(polynomials.A.shape, (self.mfs_data.N+1, self.mfs_data.N+1))
+
     def test_3d_polinomial_of_zero_degree(self):
-        polynomials = calculate_3d_polinomials(self.mfs_data)
+        polynomials = calculate_3d_polinomials(self.mfs_data.N, self.mfs_data.nu, self.mfs_data.Beta)
         self.assertAlmostEqual(polynomials.polynomials[0].coef,[1.0])
 
 

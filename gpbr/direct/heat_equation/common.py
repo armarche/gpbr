@@ -1,6 +1,7 @@
 """
 Common data for the method of fundamental solutions for the heat equation problem
 """
+from enum import Enum
 from typing import Callable
 import numpy as np
 from dataclasses import dataclass
@@ -9,6 +10,11 @@ from ..common.boundary import Point2D, Point3D
 
 from ..common.collocation import CollocationData2D, CollocationData3D
 from .polynomial import MFSPolinomials2D, MFSPolinomials3D ## Potentialy circular dependency
+
+
+class Dimension(Enum):
+    TWO_D = 2
+    THREE_D = 3
 
 @dataclass(frozen=True)
 class MFSConfig:
@@ -20,6 +26,12 @@ class MFSConfig:
     f2: Callable[[Point2D | Point3D], np.float64] # Data on Outer boundary
     eta1: np.float64 # MFS Coeefficient for the inner boundary
     eta2: np.float64 # MFS Coeefficient for the outer boundary
+    dim: Dimension = Dimension.TWO_D # Dimension of the problem
+    ## 3D specific parameters
+    n_coll_theta: np.int64 = None
+    n_coll_phi: np.int64 = None
+    n_source_theta: np.int64 = None
+    n_source_phi: np.int64 = None
 
 @dataclass(frozen=True)
 class MFSData: # Will be filled during implementing the problem

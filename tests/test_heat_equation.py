@@ -272,10 +272,14 @@ class TestHeatEquation3D(unittest.TestCase):
             fs_coefs.alpha[n] = alpha_n.T
 
         test_points = generate_test_points3d(500, 0.8, 1.6)
-
+        errs = []
         for n in range(0, self.mfs_data.N+1):
             for p in test_points:
                 u_approx = u_3d(p, n, source_points, fs_coefs, self.mfs_data)
                 u_exact = u3de(p, self.mfs_data.tn[n])
-                print(abs(u_exact - u_approx))
+                err = abs(u_exact - u_approx)
+                errs.append(err)
                 np.testing.assert_almost_equal(u_exact, u_approx, decimal=3)
+
+        print("Max error:", max(errs)) # Max error: 0.00026898224078584793
+        # Max error: 0.00026898224078584793

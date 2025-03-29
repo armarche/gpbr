@@ -73,6 +73,15 @@ class SourcePoints3D:
         '''
         # M = 2*m1*m2
         return self.gart2[j]  if j < self.M//2 else self.gart1[j - self.M//2]
+    def mesh(self) -> np.ndarray:
+        '''
+            Return the mesh of source points
+        '''
+        return np.concatenate(
+            (
+                self.gart2.mesh.reshape(3,-1),
+                self.gart1.mesh.reshape(3,-1)
+            ), axis=1)
 
     def as_boundary(self) -> StarlikeSurface:
         '''

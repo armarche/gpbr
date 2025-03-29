@@ -98,6 +98,7 @@ class StarlikeSurface:
     collocation: CollocationData3D
     points: list[Point3D]
     normals: list[Point3D] | None = None
+    mesh: np.ndarray | None = None
     @staticmethod
     def from_radial(collocation: CollocationData3D, rf: Callable[[float, float], float]):
         rvals  = rf(collocation.theta_grid, collocation.phi_grid) # We use numpy funtions, so we can do that way
@@ -105,7 +106,8 @@ class StarlikeSurface:
         yy = rvals * np.sin(collocation.theta_grid) * np.sin(collocation.phi_grid)
         zz = rvals * np.cos(collocation.theta_grid)
         points = [Point3D(x,y,z) for x,y,z in zip(xx.ravel(), yy.ravel(), zz.ravel())]
-        return StarlikeSurface(rf, None, None, collocation, points, None)
+        mesh = np.array([xx, yy, zz])
+        return StarlikeSurface(rf, None, None, collocation, points, None, mesh)
     
     @staticmethod
     def from_radial_with_derivative(collocation: CollocationData3D, rf: Callable[[float, float], float], drf_phi: Callable[[float, float], float], drf_theta: Callable[[float, float], float]):
@@ -116,6 +118,7 @@ class StarlikeSurface:
         xx = r_vals * np.sin(theta_grid) * np.cos(phi_grid)
         yy = r_vals * np.sin(theta_grid) * np.sin(phi_grid)
         zz = r_vals * np.cos(theta_grid)
+        mesh = np.array([xx, yy, zz])
 
         # Compute the partial derivatives of the surface
         # Partial derivative with respect to theta
@@ -149,7 +152,7 @@ class StarlikeSurface:
         points = [Point3D(x,y,z) for x,y,z in zip(xx.ravel(), yy.ravel(), zz.ravel())]
         normals = [Point3D(x,y,z) for x,y,z in zip(nx.ravel(), ny.ravel(), nz.ravel())]
 
-        return StarlikeSurface(rf, drf_phi, drf_theta, collocation, points, normals)
+        return StarlikeSurface(rf, drf_phi, drf_theta, collocation, points, normals, mesh)
 
     def __getitem__(self, index:int):
         return self.points[index]

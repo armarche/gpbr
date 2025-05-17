@@ -1,0 +1,335 @@
+\documentclass{beamer}
+\usetheme{default}
+\usecolortheme{default}
+\usepackage{amsmath, amssymb}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usetikzlibrary{animations}
+\usepackage[english]{babel}
+\newtheorem{theorem}{Theorem} % Uncommented and activated for proper theorem formatting
+
+\usefonttheme[onlymath]{serif}
+
+% Define commonly used commands
+\newcommand{\realnumbers}{\mathbb{R}}
+\newcommand{\bvec}[1]{\boldsymbol{#1}} % Consistent bold vector notation
+
+\title{Genetic Programming for Two-Dimensional Boundary Reconstruction in the Heat Equation}
+\subtitle{A Numerical Approach to Inverse Problems}
+\author{Your Name}
+\date{\today}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\begin{frame}
+    \frametitle{Problem Formulation - Direct Problem}
+    We consider a doubly connected domain \( D \subset \realnumbers^2 \), where each boundary is a simple closed curve of class \( C^2 \) that does not intersect. The direct problem is the heat equation with Dirichlet boundary conditions:
+    \begin{equation}\label{eq:heat_system}
+        \begin{cases}
+            \dfrac{\partial u}{\partial t} = \Delta u & \text{in } D \times [0, T], \\
+            u = f_\ell & \text{on } \Gamma_\ell \times [0, T], \quad \ell = 1, 2, \\
+            u(\bvec{x}, 0) = 0 & \text{in } D,
+        \end{cases}
+    \end{equation}
+    where:
+    \begin{itemize}
+        \item \( D \subset \realnumbers^2 \) is doubly connected.
+        \item \( \Gamma_1 \) (inner) and \( \Gamma_2 \) (outer) are smooth, non-intersecting boundaries.
+        \item \( f_\ell : \Gamma_\ell \times [0, T] \to \realnumbers \) are smooth and satisfy \( f_\ell(\bvec{x}, 0) = 0 \) for \( \bvec{x} \in \Gamma_\ell \), ensuring compatibility with the initial condition.
+        \item \( T > 0 \) is the final time.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Problem Formulation - Inverse Problem}
+    For the inverse problem, assume \( f_1 = 0 \) (homogeneous Dirichlet condition on \( \Gamma_1 \)) and \( f_2 \neq 0 \). The goal is to determine the inner boundary \( \Gamma_1 \) given the heat flux on the outer boundary:
+    \begin{equation}
+        \dfrac{\partial u}{\partial \bvec{\nu}} = g_2 \quad \text{on } \Gamma_2 \times [0, T],
+    \end{equation}
+    where \( g_2 : \Gamma_2 \times [0, T] \to \realnumbers \) is a given smooth function, and \( \bvec{\nu} \) is the outward unit normal to \( \Gamma_2 \).
+\end{frame}
+
+\begin{frame}
+    \frametitle{Existence and Uniqueness of the Inverse Problem}
+    \begin{theorem}
+        Let \( D \) and \( \tilde{D} \) be two doubly connected domains with the same outer boundary \( \Gamma_2 \) and inner boundaries \( \Gamma_1 \) and \( \tilde{\Gamma}_1 \), respectively. Let \( u \) and \( \tilde{u} \) be solutions to \eqref{eq:heat_system} in \( D \) and \( \tilde{D} \), with \( f_1 = 0 \) and \( f_2 \neq 0 \). If \( \dfrac{\partial u}{\partial \bvec{\nu}} = \dfrac{\partial \tilde{u}}{\partial \bvec{\nu}} \) on \( \Gamma_2 \times [0, T] \), then \( \Gamma_1 = \tilde{\Gamma}_1 \).
+    \end{theorem}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Step 1: Time Discretization with Rothe's Method}
+    We apply Rothe's method to discretize the time variable in \eqref{eq:heat_system}, transforming the parabolic PDE into a sequence of elliptic problems. Define the time mesh:
+    \begin{equation}\label{eq:time_discretization}
+        t_n = (n + 1) h, \quad h = \dfrac{T}{N + 1}, \quad n = -1, 0, \ldots, N, \quad N \in \mathbb{N},
+    \end{equation}
+    where \( t_{-1} = 0 \) corresponds to the initial condition, and:
+    \begin{equation}\label{eq:u_approx}
+        u_n(\bvec{x}) \approx u(\bvec{x}, t_n), \quad n = -1, \ldots, N.
+    \end{equation}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sequence of Stationary Problems}
+    Applying \eqref{eq:time_discretization} and \eqref{eq:u_approx} to \eqref{eq:heat_system}, we obtain for \( n = 0, \ldots, N \):
+    \begin{equation}
+        \begin{cases}
+            \Delta u_n - \mu^2 u_n = \sum_{m=0}^{n-1} \beta_{n-m} u_m & \text{in } D, \\
+            u_n = f_{\ell, n} & \text{on } \Gamma_\ell, \quad \ell = 1, 2,
+        \end{cases}
+    \end{equation}
+    where:
+    \begin{itemize}
+        \item \( f_{\ell, n} = f_\ell(\cdot, t_n) \), with \( u_{-1} = 0 \) for the initial condition.
+        \item \( \mu^2 = \dfrac{2}{h} \).
+        \item \( \beta_n = (-1)^n \dfrac{4}{h} \) for \( n = 1, \ldots, N \), and the sum is zero when \( n = 0 \).
+    \end{itemize}
+    This scheme provides second-order accuracy in time.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Step 2: Fundamental Sequences Method}
+    To solve the elliptic sequence, we define the fundamental sequence \( \Phi_n \):
+    \begin{equation}
+        \Delta_{\bvec{x}} \Phi_n(\bvec{x}, \bvec{y}) - \mu^2 \Phi_n(\bvec{x}, \bvec{y}) - \sum_{m=0}^{n-1} \beta_{n-m} \Phi_m(\bvec{x}, \bvec{y}) = \delta(\bvec{x} - \bvec{y}),
+    \end{equation}
+    where \( \delta \) is the Dirac delta function, and \( \Phi_n \) is a fundamental solution tailored to the sequence.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Fundamental Sequence: 2D Case}
+    In two dimensions:
+    \begin{equation}
+        \Phi_n(\bvec{x}, \bvec{y}) = K_0(\mu |\bvec{x} - \bvec{y}|) v_n(|\bvec{x} - \bvec{y}|) + K_1(\mu |\bvec{x} - \bvec{y}|) \omega_n(|\bvec{x} - \bvec{y}|),
+    \end{equation}
+    where:
+    \begin{itemize}
+        \item \( K_0 \) and \( K_1 \) are modified Bessel functions of the second kind.
+        \item \( v_n(\rho) \) and \( \omega_n(\rho) \) are polynomials with coefficients defined recursively.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Polynomials: 2D Case}
+    \begin{align}
+        v_n(\rho) &= \sum_{m=0}^{\lfloor n/2 \rfloor} a_{n, 2m} \rho^{2m}, \quad v_0(\rho) = 1, \\
+        \omega_n(\rho) &= \sum_{m=0}^{\lfloor (n-1)/2 \rfloor} a_{n, 2m+1} \rho^{2m+1}, \quad \omega_0(\rho) = 0, \\
+        a_{n, 0} &= 1, \\
+        a_{n, n} &= -\dfrac{1}{2 \mu n} \beta_1 a_{n-1, n-1}, \\
+        a_{n, k} &= \dfrac{1}{2 \mu k} \left\{ 4 \left[ \dfrac{k+1}{2} \right]^2 a_{n, k+1} - \sum_{m=k-1}^{n-1} \beta_{n-m} a_{m, k-1} \right\}, \quad k = n-1, \ldots, 1.
+    \end{align}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Solution Approximation}
+    The solution is approximated as:
+    \begin{equation}
+        u_n(\bvec{x}) \approx u_{n, M}(\bvec{x}) = \sum_{m=0}^n \sum_{j=1}^M \alpha_{m, j} \Phi_{n-m}(\bvec{x}, \bvec{y}_j), \quad \bvec{x} \in D,
+    \end{equation}
+    where \( \bvec{y}_j \notin \overline{D} \) are source points, and \( \alpha_{m, j} \) are coefficients determined by boundary conditions.
+\end{frame}
+
+\begin{frame}
+    \frametitle{System of Equations}
+    Coefficients \( \alpha_{n, j} \) are found recursively via collocation:
+    \begin{equation}
+        \sum_{j=1}^M \alpha_{n, j} \Phi_0(\bvec{x}_{\ell, i}, \bvec{y}_j) = f_{\ell, n}(\bvec{x}_{\ell, i}) - \sum_{m=0}^{n-1} \sum_{j=1}^M \alpha_{m, j} \Phi_{n-m}(\bvec{x}_{\ell, i}, \bvec{y}_j),
+    \end{equation}
+    for \( \bvec{x}_{\ell, i} \in \Gamma_\ell \), \( \ell = 1, 2 \), \( i = 1, \ldots, \tilde{M} \).
+\end{frame}
+
+\begin{frame}
+    \frametitle{Linear System of Equations}
+    \begin{equation}
+        \begin{pmatrix}
+            \bvec{\Phi}_1 \\
+            \bvec{\Phi}_2
+        \end{pmatrix}
+        \alpha_n =
+        \begin{pmatrix}
+            \bvec{f}_{1,n} \\
+            \bvec{f}_{2,n}
+        \end{pmatrix},
+    \end{equation}
+    where:
+    \begin{align}
+        (\bvec{\Phi}_\ell)_{i,j} &= \Phi_0(\bvec{x}_{\ell,i}, \bvec{y}_j), \\
+        (\bvec{f}_{\ell,n})_i &= f_{\ell,n}(\bvec{x}_{\ell,i}) - \sum_{m=0}^{n-1} \sum_{j=1}^M \alpha_{m,j} \Phi_{n-m}(\bvec{x}_{\ell,i}, \bvec{y}_j).
+    \end{align}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Point Distribution in 2D}
+    Boundaries are parametrized as:
+    \begin{equation}
+        \Gamma_\ell = \{ \bvec{\gamma}_\ell(s) = (\gamma_{\ell,1}(s), \gamma_{\ell,2}(s)), \, s \in [0, 2\pi] \}, \quad \ell = 1, 2.
+    \end{equation}
+    Source points:
+    \begin{equation}
+        \bvec{y}_j =
+        \begin{cases}
+            \eta_2 \bvec{\gamma}_2(s_j), & s_j = \dfrac{4\pi}{M} j, \quad j = 1, \ldots, \dfrac{M}{2}, \\
+            \eta_1 \bvec{\gamma}_1(\tilde{s}_j), & \tilde{s}_j = \dfrac{4\pi}{M} (j - \dfrac{M}{2}), \quad j = \dfrac{M}{2} + 1, \ldots, M,
+        \end{cases}
+    \end{equation}
+    with \( \eta_2 = 2 \) (outside \( \Gamma_2 \)), \( \eta_1 = 0.5 \) (inside \( \Gamma_1 \)). Collocation points:
+    \begin{equation}
+        \bvec{x}_{\ell,i} = \bvec{\gamma}_\ell(s_i), \quad s_i = \dfrac{2\pi}{\tilde{M}} i, \quad i = 1, \ldots, \tilde{M}.
+    \end{equation}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Final Approximation}
+    The solution and heat flux are:
+    \begin{align}
+        u(\bvec{x}, t_n) &\approx u_{n, M}(\bvec{x}), \quad \bvec{x} \in D, \\
+        \dfrac{\partial u}{\partial \bvec{\nu}}(\bvec{x}, t_n) &\approx \sum_{m=0}^n \sum_{j=1}^M \alpha_{m,j} \Psi_{n-m}(\bvec{x}, \bvec{y}_j), \quad \bvec{x} \in \Gamma_\ell,
+    \end{align}
+    where \( \Psi_n(\bvec{x}, \bvec{y}) = \dfrac{\partial \Phi_n}{\partial \bvec{\nu}}(\bvec{x}, \bvec{y}) \).
+\end{frame}
+
+\begin{frame}
+    \frametitle{Minimization Problem}
+    Assume \( \Gamma_1 \) is starlike with respect to the origin:
+    \begin{equation}
+        \Gamma_1 = \{ \bvec{\gamma}_r(s) = r(s) (\cos s, \sin s), \, s \in [0, 2\pi] \}.
+    \end{equation}
+    Minimize:
+    \begin{equation}\label{eq:min_functional}
+        J(r) = \left\| \dfrac{\partial u^r}{\partial \bvec{\nu}} - g_2 \right\|_{L_2(\Gamma_2 \times [0, T])},
+    \end{equation}
+    where \( u^r \) is the solution corresponding to \( \Gamma_1 \) defined by \( r \).
+\end{frame}
+
+\begin{frame}
+    \frametitle{Genetic Programming Overview}
+    Genetic programming (GP) is an evolutionary algorithm to optimize the radial function \( r(s) \):
+    \begin{itemize}
+        \item \textbf{Individuals}: Candidate functions \( r(s) \), represented as trees or coefficient vectors.
+        \item \textbf{Population}: A set of candidate \( r(s) \) functions.
+        \item \textbf{Fitness Function}: Measures how well \( r(s) \) reconstructs \( \Gamma_1 \), based on \( J(r) \).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Iteration Scheme}
+    The GP algorithm iterates as follows:
+    \begin{enumerate}
+        \item Initialize a population of candidate \( r(s) \) functions.
+        \item Evaluate fitness for each individual.
+        \item Select parents using tournament selection or \( (\mu, \lambda) \) strategy.
+        \item Generate offspring via crossover and mutation.
+        \item Replace the population with the best individuals.
+        \item Repeat until convergence or a maximum number of generations.
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Fitness Evaluation}
+    Each individual \( \tilde{r}(s) \) approximates \( r(s) \). Fitness is:
+    \begin{equation}
+        \text{Fitness}(\tilde{r}) = \dfrac{1}{J(\tilde{r}) + \epsilon},
+    \end{equation}
+    where \( J(\tilde{r}) \) is computed from \eqref{eq:min_functional}, and \( \epsilon > 0 \) prevents division by zero.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Initial Population Generation}
+    Generate an initial population of 200 individuals:
+    \begin{itemize}
+        \item Represent \( r(s) = a_0 + \sum_{k=1}^K (a_k \cos(ks) + b_k \sin(ks)) \).
+        \item Randomly select coefficients \( a_0, a_k, b_k \) within bounds (e.g., \( [0.5, 1.5] \) for \( a_0 \), \( [-0.2, 0.2] \) for others).
+        \item Ensure \( r(s) > 0 \) for a valid starlike boundary.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Selecting Parents for Recombination}
+    Use tournament selection:
+    \begin{itemize}
+        \item Randomly select 3 individuals.
+        \item Choose the one with the highest fitness.
+        \item Repeat until 100 parents are selected.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Selecting Parents: \( (\mu, \lambda) \) Strategy}
+    Alternatively, use the \( (\mu, \lambda) \) evolution strategy:
+    \begin{itemize}
+        \item \( \mu = 100 \): Number of parents.
+        \item \( \lambda = 200 \): Number of offspring generated.
+        \item Select the best 100 individuals from the 200 offspring for the next generation.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Offspring - Crossover}
+    For two parents \( r_1(s) \) and \( r_2(s) \) with coefficients \( \{a_{0,1}, a_{k,1}, b_{k,1}\} \) and \( \{a_{0,2}, a_{k,2}, b_{k,2}\} \):
+    \begin{itemize}
+        \item Choose a crossover point \( k_c \).
+        \item Offspring 1: Combine coefficients from \( r_1 \) up to \( k_c \) and from \( r_2 \) beyond \( k_c \).
+        \item Offspring 2: Reverse the combination.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Offspring - Mutation}
+    For an individual \( r(s) \):
+    \begin{itemize}
+        \item Randomly select a coefficient (e.g., \( a_k \) or \( b_k \)).
+        \item Add a small random value (e.g., from \( [-0.05, 0.05] \)).
+        \item Ensure \( r(s) \) remains positive.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Program Configuration}
+    \begin{itemize}
+        \item Population size: 200.
+        \item \( (\mu, \lambda) = (100, 200) \).
+        \item Representation: Fourier series with \( K = 5 \) terms.
+        \item Crossover probability: 0.8.
+        \item Mutation probability: 0.1.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Numerical Examples Generation}
+    \begin{itemize}
+        \item Define \( \Gamma_1 \) with a known \( r(s) \).
+        \item Solve the direct problem \eqref{eq:heat_system} using a fine mesh to compute \( g_2 \) on \( \Gamma_2 \), avoiding inverse crime.
+        \item Apply GP to reconstruct \( r(s) \) and compare with the true boundary.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Example 1 - 2D}
+    True boundary:
+    \begin{equation}
+        r(s) = 1, \quad \Gamma_1 = \{ (x, y) = (\cos s, \sin s), \, s \in [0, 2\pi] \}.
+    \end{equation}
+    \( \Gamma_2 \) is a circle of radius 2. Results show the reconstructed \( \tilde{r}(s) \) closely matches a unit circle.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Example 2 - 2D}
+    True boundary:
+    \begin{equation}
+        r(s) = 1 + 0.1 \cos(2s), \quad s \in [0, 2\pi].
+    \end{equation}
+    Reconstruction captures the perturbation effectively after 50 generations.
+\end{frame}
+
+\begin{frame}
+    \frametitle{3D Case - Heat Equation}
+    Extend to 3D with \( D \subset \realnumbers^3 \), where \( \Gamma_1 \) and \( \Gamma_2 \) are surfaces. The heat equation and methods adapt similarly, with spherical parametrization for boundaries.
+\end{frame}
+
+\begin{frame}
+    \frametitle{3D Case - Current Results}
+    Preliminary tests with a spherical \( \Gamma_1 \) (radius 1) and \( \Gamma_2 \) (radius 2) show promising reconstruction using adapted fundamental sequences.
+\end{frame}
+
+\end{document}

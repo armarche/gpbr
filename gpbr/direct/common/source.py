@@ -5,8 +5,6 @@ from dataclasses import dataclass
 import numpy as np
 from .boundary import StarlikeCurve, StarlikeSurface
 
-
-
 @dataclass
 class SourcePoints2D:
     M: int # Even number of source points
@@ -31,10 +29,21 @@ class SourcePoints2D:
 
     def as_boundary(self) -> StarlikeCurve:
         '''
+            DEPRECATED
             Return the combined boundary
         '''
+        raise NotImplementedError("This method is deprecated")
         return StarlikeCurve(self.gart1.collocation, [*self.gart1.points, *self.gart2.points])
         # return StarlikeCurve(self.gart1.collocation, np.concatenate((self.gart1.x, self.gart2.x)), np.concatenate((self.gart1.y, self.gart2.y)))
+    def points(self) -> np.ndarray:
+        '''
+            Return the mesh of source points
+        '''
+        return np.concatenate(
+            (
+                self.gart2.points_array.reshape(2,-1),
+                self.gart1.points_array.reshape(2,-1)
+            ), axis=1)
         
 
 def source_points_2d(
@@ -47,9 +56,17 @@ def source_points_2d(
         Note that we calculate source points in the same collocation points
     '''
     M = curve1.collocation.n + curve2.collocation.n
-    # g1 = StarlikeCurve(curve1.collocation, eta1*curve1.x, eta1*curve1.y)
-    # g2 = StarlikeCurve(curve2.collocation, eta2*curve2.x, eta2*curve2.y)
-    return SourcePoints2D(M, eta1, eta2, curve1*eta1, curve2*eta2)
+    if curve1.drf is None:
+        cpcurve1 = StarlikeCurve.from_radial(curve1.collocation, lambda s: eta1*curve1.rf(s))
+    else:
+        cpcurve1 = StarlikeCurve.from_radial_with_derivative(curve1.collocation, lambda s: eta1*curve1.rf(s), lambda s: eta1*curve1.drf(s))
+
+    if curve2.drf is None:
+        cpcurve2 = StarlikeCurve.from_radial(curve2.collocation, lambda s: eta2*curve2.rf(s))
+    else:
+        cpcurve2 = StarlikeCurve.from_radial_with_derivative(curve2.collocation, lambda s: eta2*curve2.rf(s), lambda s: eta2*curve2.drf(s))
+    
+    return SourcePoints2D(M, eta1, eta2, cpcurve1, cpcurve2)
 ##################
 
 @dataclass
@@ -65,6 +82,15 @@ class SourcePoints3D:
         '''
         # M = 2*m1*m2
         return self.gart2[j]  if j < self.M//2 else self.gart1[j - self.M//2]
+    def mesh(self) -> np.ndarray:
+        '''
+            Return the mesh of source points
+        '''
+        return np.concatenate(
+            (
+                self.gart2.mesh.reshape(3,-1),
+                self.gart1.mesh.reshape(3,-1)
+            ), axis=1)
 
     def as_boundary(self) -> StarlikeSurface:
         '''

@@ -12,6 +12,11 @@ def point_distance(p1: Point2D | Point3D, p2: Point2D | Point3D | None = None) -
         p2 = p2 if p2 is not None else Point3D(0,0,0)
         return np.linalg.norm([p1.x-p2.x, p1.y-p2.y, p1.z-p2.z])
 
+def matpoint_distance(X: np.ndarray, Y: np.ndarray) -> float:
+    if X.shape != Y.shape:
+        raise ValueError("X and Y must have the same shape")
+    return np.sqrt(np.sum((X - Y) ** 2, axis=0))
+
 
 def boundary_pointwise_distance(starlike1: StarlikeCurve | StarlikeSurface, starlike2: StarlikeCurve | StarlikeSurface) -> np.array:
     """

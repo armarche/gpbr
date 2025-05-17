@@ -22,23 +22,30 @@ def boundary_pointwise_distance(starlike1: StarlikeCurve | StarlikeSurface, star
     """
     Calculate the distance between two points
     """
-    # raise NotImplementedError("This function is not implemented yet")
-    if isinstance(starlike1, StarlikeCurve):
-        x1, y1 = starlike1.raw_points()
-        x2, y2 = starlike2.raw_points()
-        return np.linalg.norm([
-            (x1 - x2),
-            (y1 - y2)],
-            axis=0)
+    if isinstance(starlike1, StarlikeCurve) and isinstance(starlike2, StarlikeCurve): ## TODO: check if this is correct
+        diff = starlike1.points_np - starlike2.points_np
+        return np.linalg.norm(diff, axis=0)
 
-    if isinstance(starlike1, StarlikeSurface):
-        x1, y1, z1 = starlike1.raw_points()
-        x2, y2, z2 = starlike2.raw_points()
-        return np.linalg.norm([
-            *(x1 - x2),
-            *(y1 - y2),
-            *(z1 - z2)],
-            axis=0)
+    if isinstance(starlike1, StarlikeSurface) and isinstance(starlike2, StarlikeSurface): ## TODO: check if this is correct
+        diff = starlike1.mesh_np - starlike2.mesh_np
+        return np.linalg.norm(diff, axis=0)
+
+    # if isinstance(starlike1, StarlikeCurve):
+    #     x1, y1 = starlike1.raw_points()
+    #     x2, y2 = starlike2.raw_points()
+    #     return np.linalg.norm([
+    #         (x1 - x2),
+    #         (y1 - y2)],
+    #         axis=0)
+
+    # if isinstance(starlike1, StarlikeSurface):
+    #     x1, y1, z1 = starlike1.raw_points()
+    #     x2, y2, z2 = starlike2.raw_points()
+    #     return np.linalg.norm([
+    #         *(x1 - x2),
+    #         *(y1 - y2),
+    #         *(z1 - z2)],
+    #         axis=0)
 
     raise ValueError("Invalid argumets types. Should be StarlikeCurve or StarlikeSurface")
 

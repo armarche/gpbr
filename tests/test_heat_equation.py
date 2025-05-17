@@ -6,7 +6,7 @@ from gpbr.direct.common.boundary import Point2D, Point3D, StarlikeCurve, Starlik
 from gpbr.direct.common.distance import point_distance
 from gpbr.direct.common.collocation import collocation_points_2d
 from gpbr.direct.common.source import SourcePoints2D, SourcePoints3D
-from gpbr.direct.heat_equation.common import Dimension, MFSConfig
+from gpbr.direct.heat_equation.common import Dimension, MFSConfig, MFSConfig2D, MFSConfig3D
 from gpbr.direct.heat_equation.fundamental_sequence import FundamentalSequenceCoefs, fundamental_sequence_2d, fundamental_sequence_3d
 from gpbr.direct.heat_equation.helpers import dbu_2d, form_fs_matrix, form_fs_vector_2d, form_fs_vector_3d, precalculate_mfs_data, u_2d, u_3d
 from gpbr.direct.heat_equation.polynomial import calculate_2d_polinomials
@@ -63,7 +63,7 @@ class TestHeatEquation2D(unittest.TestCase):
         M = 32 # number of collocation points
         self.ETA1= 0.5
         self.ETA2= 2.0
-        config = MFSConfig(
+        config = MFSConfig2D(
             N=N,
             n_coll=M,
             n_source=M,
@@ -88,8 +88,8 @@ class TestHeatEquation2D(unittest.TestCase):
         Gamma2 = StarlikeCurve.from_radial(coll_2d, r2_func)
 
         source_coll_2d = collocation_points_2d(self.mfs_data.M//2, startpoint=False)
-        Gamma1_source = StarlikeCurve.from_radial(source_coll_2d, lambda s: self.ETA1*r1_func(s))
-        Gamma2_source = StarlikeCurve.from_radial(source_coll_2d, lambda s: self.ETA2*r2_func(s))
+        Gamma1_source = StarlikeCurve.from_radial(source_coll_2d, r1_func)
+        Gamma2_source = StarlikeCurve.from_radial(source_coll_2d, r2_func)
         source_points = SourcePoints2D(self.mfs_data.M, self.ETA1, self.ETA2, Gamma1_source, Gamma2_source)
 
         fundamental_sequence_gamma1 = fundamental_sequence_2d(Gamma1, source_points, self.mfs_data)
@@ -131,8 +131,8 @@ class TestHeatEquation2D(unittest.TestCase):
         Gamma2 = StarlikeCurve.from_radial(coll_2d, r2_func)
 
         source_coll_2d = collocation_points_2d(self.mfs_data.M//2, startpoint=False)
-        Gamma1_source = StarlikeCurve.from_radial(source_coll_2d, lambda s: self.ETA1*r1_func(s))
-        Gamma2_source = StarlikeCurve.from_radial(source_coll_2d, lambda s: self.ETA2*r2_func(s))
+        Gamma1_source = StarlikeCurve.from_radial(source_coll_2d, r1_func)
+        Gamma2_source = StarlikeCurve.from_radial(source_coll_2d, r2_func)
         source_points = SourcePoints2D(self.mfs_data.M, self.ETA1, self.ETA2, Gamma1_source, Gamma2_source)
 
         fundamental_sequence_gamma1 = fundamental_sequence_2d(Gamma1, source_points, self.mfs_data)
@@ -179,9 +179,13 @@ class TestHeatEquation2D(unittest.TestCase):
         Gamma1 = StarlikeCurve.from_radial_with_derivative(coll_2d, r1_func, dr1_func)
         Gamma2 = StarlikeCurve.from_radial_with_derivative(coll_2d, r2_func, dr2_func)
 
+        # source_coll_2d = collocation_points_2d(self.mfs_data.M//2, startpoint=False)
+        # Gamma1_source = StarlikeCurve.from_radial(source_coll_2d, lambda s: self.ETA1*r1_func(s))
+        # Gamma2_source = StarlikeCurve.from_radial(source_coll_2d, lambda s: self.ETA2*r2_func(s))
+        # source_points = SourcePoints2D(self.mfs_data.M, self.ETA1, self.ETA2, Gamma1_source, Gamma2_source)
         source_coll_2d = collocation_points_2d(self.mfs_data.M//2, startpoint=False)
-        Gamma1_source = StarlikeCurve.from_radial(source_coll_2d, lambda s: self.ETA1*r1_func(s))
-        Gamma2_source = StarlikeCurve.from_radial(source_coll_2d, lambda s: self.ETA2*r2_func(s))
+        Gamma1_source = StarlikeCurve.from_radial(source_coll_2d, r1_func)
+        Gamma2_source = StarlikeCurve.from_radial(source_coll_2d, r2_func)
         source_points = SourcePoints2D(self.mfs_data.M, self.ETA1, self.ETA2, Gamma1_source, Gamma2_source)
 
         fundamental_sequence_gamma1 = fundamental_sequence_2d(Gamma1, source_points, self.mfs_data)
@@ -205,7 +209,7 @@ class TestHeatEquation2D(unittest.TestCase):
 
         for n in range(0, self.mfs_data.N+1):
             norms = []
-            for x, nx in zip(Gamma2.points, Gamma2.normals):
+            for x, nx in zip(Gamma2.point_list, Gamma2.normal_list):
                 du_approx = dbu_2d(x, nx, n, source_points, fs_coefs, self.mfs_data)
                 du_exact = du2de(x, nx, self.mfs_data.tn[n])
                 norms.append(abs(du_approx - du_exact))
@@ -219,7 +223,7 @@ class TestHeatEquation3D(unittest.TestCase):
         M = m1 * m2 # number of collocation points
         ETA1 = 0.5
         ETA2 = 2.0
-        config = MFSConfig(
+        config = MFSConfig3D(
             N=N,
             n_coll=M,
             n_source=M,
@@ -228,7 +232,6 @@ class TestHeatEquation3D(unittest.TestCase):
             eta2=ETA2,
             f1=f1,
             f2=f2,
-            dim = Dimension.THREE_D,
             n_coll_theta=m1,
             n_coll_phi=m2,
             n_source_theta=m1,
@@ -252,8 +255,8 @@ class TestHeatEquation3D(unittest.TestCase):
         Gamma1 = StarlikeSurface.from_radial(self.mfs_data.collocation, r1_func)
         Gamma2 = StarlikeSurface.from_radial(self.mfs_data.collocation, r2_func)
 
-        Gamma1_source = StarlikeSurface.from_radial(self.mfs_data.source_collocation, lambda theta, phi: self.mfs_data.eta1*r1_func(theta, phi))
-        Gamma2_source = StarlikeSurface.from_radial(self.mfs_data.source_collocation, lambda theta, phi: self.mfs_data.eta2*r2_func(theta, phi))
+        Gamma1_source = StarlikeSurface.from_radial(self.mfs_data.source_collocation, r1_func)
+        Gamma2_source = StarlikeSurface.from_radial(self.mfs_data.source_collocation, r2_func)
 
         src_cnt = self.mfs_data.source_collocation.n_theta * self.mfs_data.source_collocation.n_phi
         source_points = SourcePoints3D(src_cnt, self.mfs_data.eta1, self.mfs_data.eta2, Gamma1_source, Gamma2_source)

@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GP Half-and-Half Initialization Animation</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: row;
+        }
+        .code-container {
+            width: 600px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-right: 20px;
+        }
+        .visualization {
+            width: 800px;
+            height: 600px;
+        }
+        .code-line {
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin: 1px 0;
+        }
+        .active-line {
+            background-color: #ffff99;
+            font-weight: bold;
+        }
+        .control-panel {
+            margin: 10px 0;
+        }
+        button {
+            padding: 5px 10px;
+            margin-right: 10px;
+        }
+        .sets-display {
+            margin: 15px 0;
+            padding: 10px;
+            border: 1px dashed #ccc;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Genetic Programming: Half-and-Half Tree Generation</h1>
+    
+    <div class="control-panel">
+        <button id="startBtn">Start Animation</button>
+        <button id="pauseBtn">Pause</button>
+        <button id="nextBtn">Next Step</button>
+        <button id="resetBtn">Reset</button>
+        <span>Speed: </span>
+        <input type="range" id="speedSlider" min="100" max="2000" value="1000">
+    </div>
+    
+    <div class="container">
+        <div class="code-container" id="pseudocode">
+            <h3>Half-and-Half Pseudocode</h3>
+            <div class="code-line" id="line-1">function generateHalfAndHalf(maxDepth, method) {</div>
+            <div class="code-line" id="line-2">    // method can be 'grow' or 'full'</div>
+            <div class="code-line" id="line-3">    return generateTree(0, maxDepth, method);</div>
+            <div class="code-line" id="line-4">}</div>
+            <div class="code-line" id="line-5"></div>
+            <div class="code-line" id="line-6">function generateTree(currentDepth, maxDepth, method) {</div>
+            <div class="code-line" id="line-7">    let node = {};</div>
+            <div class="code-line" id="line-8">    </div>
+            <div class="code-line" id="line-9">    // At max depth, only choose terminals</div>
+            <div class="code-line" id="line-10">    if (currentDepth == maxDepth) {</div>
+            <div class="code-line" id="line-11">        let terminal = randomSelect(TERMINALS);</div>
+            <div class="code-line" id="line-12">        node.type = (terminal == 'rand') ? 'constant' : 'variable';</div>
+            <div class="code-line" id="line-13">        node.value = (node.type == 'constant') ? randomValue() : terminal;</div>
+            <div class="code-line" id="line-14">        return node;</div>
+            <div class="code-line" id="line-15">    }</div>
+            <div class="code-line" id="line-16">    </div>
+            <div class="code-line" id="line-17">    // For 'full' method, only choose functions until max depth</div>
+            <div class="code-line" id="line-18">    if (method == 'full') {</div>
+            <div class="code-line" id="line-19">        let functionName = randomSelect(FUNCTIONS);</div>
+            <div class="code-line" id="line-20">        node.type = 'function';</div>
+            <div class="code-line" id="line-21">        node.value = functionName;</div>
+            <div class="code-line" id="line-22">    }</div>
+            <div class="code-line" id="line-23">    // For 'grow', choose from both terminals and functions</div>
+            <div class="code-line" id="line-24">    else {</div>
+            <div class="code-line" id="line-25">        let options = [...TERMINALS, ...FUNCTIONS];</div>
+            <div class="code-line" id="line-26">        let choice = randomSelect(options);</div>
+            <div class="code-line" id="line-27">        </div>
+            <div class="code-line" id="line-28">        if (FUNCTIONS.includes(choice)) {</div>
+            <div class="code-line" id="line-29">            node.type = 'function';</div>
+            <div class="code-line" id="line-30">            node.value = choice;</div>
+            <div class="code-line" id="line-31">        } else {</div>
+            <div class="code-line" id="line-32">            node.type = (choice == 'rand') ? 'constant' : 'variable';</div>
+            <div class="code-line" id="line-33">            node.value = (node.type == 'constant') ? randomValue() : choice;</div>
+            <div class="code-line" id="line-34">            return node; // Terminal nodes have no children</div>
+            <div class="code-line" id="line-35">        }</div>
+            <div class="code-line" id="line-36">    }</div>
+            <div class="code-line" id="line-37">    </div>
+            <div class="code-line" id="line-38">    // Add children for function nodes</div>
+            <div class="code-line" id="line-39">    node.children = [];</div>
+            <div class="code-line" id="line-40">    let arity = getArity(node.value);</div>
+            <div class="code-line" id="line-41">    </div>
+            <div class="code-line" id="line-42">    for (let i = 0; i < arity; i++) {</div>
+            <div class="code-line" id="line-43">        let child = generateTree(currentDepth + 1, maxDepth, method);</div>
+            <div class="code-line" id="line-44">        node.children.push(child);</div>
+            <div class="code-line" id="line-45">    }</div>
+            <div class="code-line" id="line-46">    </div>
+            <div class="code-line" id="line-47">    return node;</div>
+            <div class="code-line" id="line-48">}</div>
+        </div>
+        
+        <div class="visualization">
+            <div class="sets-display" id="sets">
+                <div><strong>TERMINALS:</strong> <span id="terminals"></span></div>
+                <div><strong>FUNCTIONS:</strong> <span id="functions"></span></div>
+                <div id="selection"></div>
+            </div>
+            <canvas id="canvas" width="800" height="500"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Animation control variables
+        let animationSpeed = 1000; // ms per step
+        let animationPaused = true;
+        let currentStep = 0;
+        let animationInterval;
+        
+        // GP variables
+        const TERMINALS = ['s', 'rand'];
+        const FUNCTIONS = ['+', '-', '*', '/', 'sin', 'cos', 'sqrt'];
+        const FUNCTION_ARITIES = {'+': 2, '-': 2, '*': 2, '/': 2, 'sin': 1, 'cos': 1, 'sqrt': 1};
+        const MAX_DEPTH = 3;
+        
+        // Canvas setup
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const r = 20; // Node radius
+        
+        // Animation state
+        let treeRoot = null;
+        let currentNode = null;
+        let executionStack = [];
+        let nodeSequence = [];
+        let currentSelection = null;
+        let currentMethod = 'grow'; // Start with grow method
+        
+        // UI elements
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const speedSlider = document.getElementById('speedSlider');
+        const terminalsDisplay = document.getElementById('terminals');
+        const functionsDisplay = document.getElementById('functions');
+        const selectionDisplay = document.getElementById('selection');
+        
+        // Display sets
+        function displaySets() {
+            terminalsDisplay.innerHTML = TERMINALS.map(t => 
+                `<span style="color: ${t === currentSelection ? 'red' : 'black'}; margin: 0 5px;">${t}</span>`
+            ).join(' ');
+            
+            functionsDisplay.innerHTML = FUNCTIONS.map(f => 
+                `<span style="color: ${f === currentSelection ? 'red' : 'black'}; margin: 0 5px;">${f}</span>`
+            ).join(' ');
+        }
+        
+        // Initialize execution sequence
+        function initializeExecution() {
+            // Reset all state
+            treeRoot = null;
+            currentNode = null;
+            executionStack = [];
+            nodeSequence = [];
+            currentSelection = null;
+            
+            // Start with the first call to generateHalfAndHalf
+            executionStack.push({
+                func: 'generateHalfAndHalf',
+                line: 1,
+                args: { maxDepth: MAX_DEPTH, method: currentMethod },
+                context: {},
+                returnTo: null
+            });
+        }
+        
+        // Highlight a specific line in the pseudocode
+        function highlightLine(lineNum) {
+            // Remove highlight from all lines
+            document.querySelectorAll('.code-line').forEach(line => {
+                line.classList.remove('active-line');
+            });
+            
+            // Add highlight to the current line
+            const lineElement = document.getElementById(`line-${lineNum}`);
+            if (lineElement) {
+                lineElement.classList.add('active-line');
+                lineElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+        
+        // Random selection helper
+        function randomSelect(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+        
+        // Get arity for a function
+        function getArity(funcName) {
+            return FUNCTION_ARITIES[funcName] || 0;
+        }
+        
+        // Generate random value for constants
+        function randomValue() {
+            return (Math.random() * 2 - 1).toFixed(2);
+        }
+        
+        // Execute a single step of the animation
+        function executeStep() {
+            if (executionStack.length === 0) {
+                stopAnimation();
+                return;
+            }
+            
+            // Get the current frame from the stack
+            const currentFrame = executionStack[executionStack.length - 1];
+            highlightLine(currentFrame.line);
+            
+            // Execute actions based on the current line
+            switch (currentFrame.func) {
+                case 'generateHalfAndHalf':
+                    executeGenerateHalfAndHalf(currentFrame);
+                    break;
+                case 'generateTree':
+                    executeGenerateTree(currentFrame);
+                    break;
+            }
+            
+            // Update visualization
+            updateVisualization();
+        }
+        
+        // Execute steps in generateHalfAndHalf function
+        function executeGenerateHalfAndHalf(frame) {
+            switch(frame.line) {
+                case 1: // Function declaration
+                    frame.line = 3;
+                    break;
+                case 3: // Call generateTree
+                    executionStack.push({
+                        func: 'generateTree',
+                        line: 6,
+                        args: { 
+                            currentDepth: 0, 
+                            maxDepth: frame.args.maxDepth, 
+                            method: frame.args.method 
+                        },
+                        context: {},
+                        returnTo: { func: 'generateHalfAndHalf', line: 4, returnValue: null }
+                    });
+                    break;
+                case 4: // Return from generateHalfAndHalf
+                    treeRoot = frame.returnValue;
+                    executionStack.pop(); // Remove this frame
+                    break;
+            }
+        }
+        
+        // Execute steps in generateTree function
+        function executeGenerateTree(frame) {
+            const { currentDepth, maxDepth, method } = frame.args;
+            
+            switch(frame.line) {
+                case 6: // Function declaration
+                    frame.line = 7;
+                    break;
+                case 7: // Initialize node
+                    frame.context.node = {};
+                    frame.line = 10;
+                    break;
+                case 10: // Check if at max depth
+                    if (currentDepth == maxDepth) {
+                        frame.line = 11;
+                    } else {
+                        frame.line = 18;
+                    }
+                    break;
+                case 11: // Choose terminal
+                    currentSelection = randomSelect(TERMINALS);
+                    frame.context.terminal = currentSelection;
+                    frame.line = 12;
+                    break;
+                case 12: // Set node type
+                    frame.context.node.type = (frame.context.terminal === 'rand') ? 'constant' : 'variable';
+                    frame.line = 13;
+                    break;
+                case 13: // Set node value
+                    if (frame.context.node.type === 'constant') {
+                        frame.context.node.value = randomValue();
+                    } else {
+                        frame.context.node.value = frame.context.terminal;
+                    }
+                    currentNode = frame.context.node;
+                    nodeSequence.push(currentNode);
+                    frame.line = 14;
+                    break;
+                case 14: // Return terminal node
+                    frame.returnValue = frame.context.node;
+                    executionStack.pop();
+                    
+                    // Handle return to parent frame
+                    if (frame.returnTo) {
+                        const parentFrame = executionStack[executionStack.length - 1];
+                        parentFrame.line = frame.returnTo.line;
+                        parentFrame.returnValue = frame.returnValue;
+                    }
+                    break;
+                case 18: // Method check
+                    if (method === 'full') {
+                        frame.line = 19;
+                    } else {
+                        frame.line = 24;
+                    }
+                    break;
+                case 19: // Select function (full method)
+                    currentSelection = randomSelect(FUNCTIONS);
+                    frame.context.functionName = currentSelection;
+                    frame.line = 20;
+                    break;
+                case 20: // Set node type
+                    frame.context.node.type = 'function';
+                    frame.line = 21;
+                    break;
+                case 21: // Set function value
+                    frame.context.node.value = frame.context.functionName;
+                    currentNode = frame.context.node;
+                    nodeSequence.push(currentNode);
+                    frame.line = 38;
+                    break;
+                case 24: // Grow method
+                    frame.line = 25;
+                    break;
+                case 25: // Create options array
+                    frame.context.options = [...TERMINALS, ...FUNCTIONS];
+                    frame.line = 26;
+                    break;
+                case 26: // Choose from options
+                    currentSelection = randomSelect(frame.context.options);
+                    frame.context.choice = currentSelection;
+                    frame.line = 28;
+                    break;
+                case 28: // Check if function was chosen
+                    if (FUNCTIONS.includes(frame.context.choice)) {
+                        frame.line = 29;
+                    } else {
+                        frame.line = 31;
+                    }
+                    break;
+                case 29: // Set function node type
+                    frame.context.node.type = 'function';
+                    frame.line = 30;
+                    break;
+                case 30: // Set function value
+                    frame.context.node.value = frame.context.choice;
+                    currentNode = frame.context.node;
+                    nodeSequence.push(currentNode);
+                    frame.line = 38;
+                    break;
+                case 31: // Terminal was chosen
+                    frame.context.node.type = (frame.context.choice === 'rand') ? 'constant' : 'variable';
+                    frame.line = 32;
+                    break;
+                case 32: // Set terminal value
+                    if (frame.context.node.type === 'constant') {
+                        frame.context.node.value = randomValue();
+                    } else {
+                        frame.context.node.value = frame.context.choice;
+                    }
+                    currentNode = frame.context.node;
+                    nodeSequence.push(currentNode);
+                    frame.line = 34;
+                    break;
+                case 34: // Return terminal node
+                    frame.returnValue = frame.context.node;
+                    executionStack.pop();
+                    
+                    // Handle return to parent frame
+                    if (frame.returnTo) {
+                        const parentFrame = executionStack[executionStack.length - 1];
+                        parentFrame.line = frame.returnTo.line;
+                        parentFrame.returnValue = frame.returnValue;
+                    }
+                    break;
+                case 38: // Initialize children array
+                    frame.context.node.children = [];
+                    frame.line = 40;
+                    break;
+                case 40: // Get arity
+                    frame.context.arity = getArity(frame.context.node.value);
+                    frame.context.i = 0;
+                    frame.line = 42;
+                    break;
+                case 42: // For loop condition
+                    if (frame.context.i < frame.context.arity) {
+                        frame.line = 43;
+                    } else {
+                        frame.line = 47;
+                    }
+                    break;
+                case 43: // Generate child
+                    executionStack.push({
+                        func: 'generateTree',
+                        line: 6,
+                        args: { currentDepth: currentDepth + 1, maxDepth, method },
+                        context: {},
+                        returnTo: { func: 'generateTree', line: 44 }
+                    });
+                    break;
+                case 44: // Add child to children array
+                    frame.context.node.children.push(frame.returnValue);
+                    frame.context.i++;
+                    frame.line = 42; // Back to loop condition
+                    break;
+                case 47: // Return node
+                    frame.returnValue = frame.context.node;
+                    executionStack.pop();
+                    
+                    // Handle return to parent frame
+                    if (frame.returnTo) {
+                        const parentFrame = executionStack[executionStack.length - 1];
+                        parentFrame.line = frame.returnTo.line;
+                        parentFrame.returnValue = frame.returnValue;
+                    }
+                    break;
+            }
+        }
+        
+        // Update tree visualization
+        function updateVisualization() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            displaySets();
+            
+            // Show selection if any
+            if (currentSelection) {
+                selectionDisplay.textContent = `Selected: ${currentSelection}`;
+            } else {
+                selectionDisplay.textContent = '';
+            }
+            
+            if (!treeRoot && nodeSequence.length > 0) {
+                // If tree is still being constructed, visualize the current nodes
+                visualizePartialTree();
+            } else if (treeRoot) {
+                // Tree is complete, visualize the entire tree
+                assignTreePositions(treeRoot, canvas.width / 2, 60, 200, 80);
+                visualizeTree(treeRoot);
+            }
+        }
+        
+        // Visualize partial tree during construction
+        function visualizePartialTree() {
+        // First position all function nodes in a hierarchical structure
+            // This makes a much clearer visualization as the tree grows
+            
+            // Find potential root nodes (not yet children of other nodes)
+            let childNodes = new Set();
+            for (let node of nodeSequence) {
+                if (node.children) {
+                    for (let child of node.children) {
+                        childNodes.add(child);
+                    }
+                }
+            }
+            
+            // Find nodes that could be roots (not children of anything yet)
+            let rootCandidates = nodeSequence.filter(node => !childNodes.has(node));
+            
+            // Position nodes in a tree-like structure where possible
+            for (let root of rootCandidates) {
+                if (root.type === 'function') {
+                    // Use tree positioning for function nodes
+                    assignPartialTreePositions(root, canvas.width / (rootCandidates.length + 1) * (rootCandidates.indexOf(root) + 1), 60, 160, 80);
+                } else {
+                    // Simple positioning for terminal nodes
+                    root.x = canvas.width / (rootCandidates.length + 1) * (rootCandidates.indexOf(root) + 1);
+                    root.y = 60;
+                }
+            }
+            
+            // Draw all nodes and connections
+            for (let node of nodeSequence) {
+                drawNode(node, node === currentNode);
+            }
+            
+            // Draw connections
+            drawPartialConnections();
+        }
+        // Recursive function to position nodes in a partial tree
+        function assignPartialTreePositions(node, x, y, dx, dy) {
+            // Set position for this node
+            node.x = x;
+            node.y = y;
+            
+            if (node.children && node.children.length > 0) {
+                // Position children
+                if (node.children.length === 1) {
+                    // Center single child
+                    assignPartialTreePositions(node.children[0], x, y + dy, dx / 2, dy);
+                } else if (node.children.length === 2) {
+                    // Position two children on left and right
+                    assignPartialTreePositions(node.children[0], x - dx, y + dy, dx / 2, dy);
+                    assignPartialTreePositions(node.children[1], x + dx, y + dy, dx / 2, dy);
+                } else {
+                    // For more children, space them evenly
+                    const spacing = 2 * dx / (node.children.length - 1);
+                    for (let i = 0; i < node.children.length; i++) {
+                        const childX = x - dx + i * spacing;
+                        assignPartialTreePositions(node.children[i], childX, y + dy, dx / 3, dy);
+                    }
+                }
+            }
+        }
+        // Draw connecting lines for partial tree
+        function drawPartialConnections() {
+            // Instead of inferring relationships, use the actual parent-child connections that exist
+            for (let i = 0; i < nodeSequence.length; i++) {
+                const node = nodeSequence[i];
+                
+                // Only draw connections for nodes that have children
+                if (node.children && node.children.length > 0) {
+                    // Draw connections to all established children
+                    for (let j = 0; j < node.children.length; j++) {
+                        const child = node.children[j];
+                        drawConnection(node, child);
+                    }
+                }
+            }
+            
+            // Draw connection for the node currently being constructed
+            // This shows "in-progress" connections from current function to its future child
+            if (executionStack.length > 1) {
+                // Find the closest parent function node that's expecting children
+                for (let i = executionStack.length - 2; i >= 0; i--) {
+                    const parentFrame = executionStack[i];
+                    if (parentFrame.func === 'generateTree' && 
+                        parentFrame.context.node && 
+                        parentFrame.context.node.type === 'function' &&
+                        currentNode && 
+                        (!parentFrame.context.node.children || 
+                        parentFrame.context.node.children.length < getArity(parentFrame.context.node.value))) {
+                        
+                        // Draw a dashed line to show "in progress" connection
+                        ctx.setLineDash([5, 3]);
+                        ctx.beginPath();
+                        ctx.moveTo(parentFrame.context.node.x, parentFrame.context.node.y + r);
+                        ctx.lineTo(currentNode.x, currentNode.y - r);
+                        ctx.strokeStyle = '#999';
+                        ctx.stroke();
+                        ctx.setLineDash([]); // Reset to solid line
+                        break;
+                    }
+                }
+            }
+                }
+        
+        // Draw a node
+        function drawNode(node, isHighlighted = false) {
+            // Draw circle
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
+            ctx.fillStyle = isHighlighted ? '#ffcc00' : 'white';
+            ctx.fill();
+            ctx.strokeStyle = isHighlighted ? 'orange' : 'black';
+            ctx.lineWidth = isHighlighted ? 2 : 1;
+            ctx.stroke();
+            
+            // Draw label
+            ctx.fillStyle = 'black';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            let label = node.type === 'function' ? node.value : 
+                       (node.type === 'variable' ? node.value : node.value);
+            ctx.fillText(label, node.x, node.y);
+        }
+        
+        // Draw a connection between two nodes
+        function drawConnection(parent, child) {
+            ctx.beginPath();
+            ctx.moveTo(parent.x, parent.y + r);
+            ctx.lineTo(child.x, child.y - r);
+            ctx.stroke();
+        }
+        
+        // Assign positions to tree nodes for visualization
+        function assignTreePositions(node, x, y, dx, dy) {
+            node.x = x;
+            node.y = y;
+            
+            if (node.children && node.children.length > 0) {
+                if (node.children.length === 1) {
+                    // Center the only child
+                    assignTreePositions(node.children[0], x, y + dy, dx / 2, dy);
+                } else if (node.children.length === 2) {
+                    // Position left and right children
+                    assignTreePositions(node.children[0], x - dx, y + dy, dx / 2, dy);
+                    assignTreePositions(node.children[1], x + dx, y + dy, dx / 2, dy);
+                }
+            }
+        }
+        
+        // Visualize the complete tree
+        function visualizeTree(node) {
+            // Draw connections to children first (so they're behind nodes)
+            if (node.children) {
+                for (let child of node.children) {
+                    drawConnection(node, child);
+                    visualizeTree(child);
+                }
+            }
+            
+            // Draw the node itself
+            drawNode(node, node === currentNode);
+        }
+        
+        // Animation control functions
+        function startAnimation() {
+            if (!animationInterval) {
+                animationPaused = false;
+                startBtn.textContent = 'Restart';
+                animationInterval = setInterval(() => {
+                    if (!animationPaused) {
+                        executeStep();
+                    }
+                }, animationSpeed);
+            } else {
+                // Restart animation
+                stopAnimation();
+                resetAnimation();
+                startAnimation();
+            }
+        }
+        
+        function pauseAnimation() {
+            animationPaused = true;
+        }
+        
+        function stopAnimation() {
+            clearInterval(animationInterval);
+            animationInterval = null;
+            animationPaused = true;
+        }
+        
+        function resetAnimation() {
+            stopAnimation();
+            startBtn.textContent = 'Start Animation';
+            initializeExecution();
+            highlightLine(0);
+            updateVisualization();
+        }
+        
+        function nextStep() {
+            pauseAnimation();
+            executeStep();
+        }
+        
+        // Set up event listeners
+        startBtn.addEventListener('click', startAnimation);
+        pauseBtn.addEventListener('click', pauseAnimation);
+        nextBtn.addEventListener('click', nextStep);
+        resetBtn.addEventListener('click', resetAnimation);
+        
+        speedSlider.addEventListener('input', () => {
+            animationSpeed = 2100 - speedSlider.value; // Invert so higher = faster
+            if (animationInterval) {
+                stopAnimation();
+                startAnimation();
+            }
+        });
+        
+        // Toggle between grow and full methods
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'g' || e.key === 'G') {
+                currentMethod = 'grow';
+                resetAnimation();
+            } else if (e.key === 'f' || e.key === 'F') {
+                currentMethod = 'full';
+                resetAnimation();
+            }
+        });
+        
+        // Initialize
+        resetAnimation();
+        displaySets();
+    </script>
+</body>
+</html>

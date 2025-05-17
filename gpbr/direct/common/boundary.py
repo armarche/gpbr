@@ -38,23 +38,58 @@ class StarlikeCurve:
     collocation: CollocationData2D
     points: list[Point2D]
     normals: list[Point2D] | None = None
+    points_array: np.ndarray | None = None
+    normals_array: np.ndarray | None = None
     @staticmethod
     def from_radial(collocation: CollocationData2D, rf: Callable[[float], float]):
-        return StarlikeCurve(rf, None, collocation, [Point2D(rf(theta)*np.cos(theta), rf(theta)*np.sin(theta)) for theta in collocation.theta], None)
+        rvals  = rf(collocation.theta) # We use numpy funtions, so we can do that way
+        xx = rvals * np.cos(collocation.theta)
+        yy = rvals * np.sin(collocation.theta)
+        return StarlikeCurve(rf, None, collocation, [Point2D(x,y) for x,y in zip(xx.ravel(), yy.ravel())], None, points_array=np.array([xx, yy]))
+        # return StarlikeCurve(rf, None, collocation, [Point2D(rf(theta)*np.cos(theta), rf(theta)*np.sin(theta)) for theta in collocation.theta], None)
 
     @staticmethod
     def from_radial_with_derivative(collocation: CollocationData2D, rf: Callable[[float], float], drf: Callable[[float], float]):
-        points = np.empty(collocation.n, dtype=Point2D)
-        normals = np.empty(collocation.n, dtype=Point2D)
-        for i, theta in enumerate(collocation.theta):
-            points[i] = Point2D(rf(theta)*np.cos(theta), rf(theta)*np.sin(theta))
-            tangent = Point2D(-np.sin(theta), np.cos(theta)) * rf(theta) + Point2D(np.cos(theta), np.sin(theta)) * drf(theta)
-            normal = Point2D(tangent.y, -tangent.x) ## Outward normal
-            # norm = np.sqrt(rf(theta)**2 + drf(theta)**2)
-            norm = np.sqrt(normal.x**2 + normal.y**2)
-            normals[i] = Point2D(normal.x / norm, normal.y / norm)    
+        # Calculate all points at once using vectorized operations
+        r_vals = rf(collocation.theta)
+        xx = r_vals * np.cos(collocation.theta)
+        yy = r_vals * np.sin(collocation.theta)
 
-        return StarlikeCurve(rf, drf, collocation, points, normals)
+        # Create points array
+        points = np.array([Point2D(x, y) for x, y in zip(xx, yy)])
+
+        # Calculate tangents (vectorized)
+        dr_vals = drf(collocation.theta)
+        tx = -np.sin(collocation.theta) * r_vals + np.cos(collocation.theta) * dr_vals
+        ty = np.cos(collocation.theta) * r_vals + np.sin(collocation.theta) * dr_vals
+
+        # Calculate normals (perpendicular to tangent)
+        nx = ty  # Outward normal
+        ny = -tx
+
+        # Normalize
+        norms = np.sqrt(nx**2 + ny**2)
+        nx_normalized = nx / norms
+        ny_normalized = ny / norms
+
+        # Create normals array
+        normals = np.array([Point2D(nx, ny) for nx, ny in zip(nx_normalized, ny_normalized)])
+
+        return StarlikeCurve(rf, drf, collocation, points, normals, points_array=np.array([xx, yy]), normals_array=np.array([nx_normalized, ny_normalized]))
+
+
+
+        # points = np.empty(collocation.n, dtype=Point2D)
+        # normals = np.empty(collocation.n, dtype=Point2D)
+        # for i, theta in enumerate(collocation.theta):
+        #     points[i] = Point2D(rf(theta)*np.cos(theta), rf(theta)*np.sin(theta))
+        #     tangent = Point2D(-np.sin(theta), np.cos(theta)) * rf(theta) + Point2D(np.cos(theta), np.sin(theta)) * drf(theta)
+        #     normal = Point2D(tangent.y, -tangent.x) ## Outward normal
+        #     # norm = np.sqrt(rf(theta)**2 + drf(theta)**2)
+        #     norm = np.sqrt(normal.x**2 + normal.y**2)
+        #     normals[i] = Point2D(normal.x / norm, normal.y / norm)    
+
+        # return StarlikeCurve(rf, drf, collocation, points, normals)
     
     @staticmethod
     def from_radial_values(collocation: CollocationData2D, rf: Callable[[float], float], radial_values: np.array):
@@ -99,6 +134,7 @@ class StarlikeSurface:
     points: list[Point3D]
     normals: list[Point3D] | None = None
     mesh: np.ndarray | None = None
+    normals_mesh: np.ndarray | None = None
     @staticmethod
     def from_radial(collocation: CollocationData3D, rf: Callable[[float, float], float]):
         rvals  = rf(collocation.theta_grid, collocation.phi_grid) # We use numpy funtions, so we can do that way
@@ -148,11 +184,12 @@ class StarlikeSurface:
         nx /= norm
         ny /= norm
         nz /= norm
+        normals_mesh = np.array([nx, ny, nz])
 
         points = [Point3D(x,y,z) for x,y,z in zip(xx.ravel(), yy.ravel(), zz.ravel())]
         normals = [Point3D(x,y,z) for x,y,z in zip(nx.ravel(), ny.ravel(), nz.ravel())]
 
-        return StarlikeSurface(rf, drf_phi, drf_theta, collocation, points, normals, mesh)
+        return StarlikeSurface(rf, drf_phi, drf_theta, collocation, points, normals, mesh, normals_mesh)
 
     def __getitem__(self, index:int):
         return self.points[index]

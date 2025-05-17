@@ -238,10 +238,16 @@ class TestHeatEquation3D(unittest.TestCase):
     
     def test_equation_case1(self):
         def r1_func(theta, phi):
-            return np.ones_like(theta) * 0.8
+            return np.ones_like(theta) * 0.4
 
         def r2_func(theta, phi):
-            return np.ones_like(theta) * 1.6
+            return np.ones_like(theta) * 0.8
+        
+        # def r1_func(theta, phi):
+        #     return np.ones_like(theta) * 0.8
+
+        # def r2_func(theta, phi):
+        #     return np.ones_like(theta) * 1.6
         
         Gamma1 = StarlikeSurface.from_radial(self.mfs_data.collocation, r1_func)
         Gamma2 = StarlikeSurface.from_radial(self.mfs_data.collocation, r2_func)
@@ -271,7 +277,8 @@ class TestHeatEquation3D(unittest.TestCase):
             alpha_n = lstsq(PHI_MAT, F)[0]
             fs_coefs.alpha[n] = alpha_n.T
 
-        test_points = generate_test_points3d(500, 0.8, 1.6)
+        # test_points = generate_test_points3d(500, 0.8, 1.6)
+        test_points = generate_test_points3d(500, 0.4, 0.8)
         errs = []
         for n in range(0, self.mfs_data.N+1):
             for p in test_points:
@@ -281,5 +288,5 @@ class TestHeatEquation3D(unittest.TestCase):
                 errs.append(err)
                 np.testing.assert_almost_equal(u_exact, u_approx, decimal=3)
 
-        print("Max error:", max(errs)) # Max error: 0.00026898224078584793
+        print("\nMax error:", max(errs)) # Max error: 0.00026898224078584793
         # Max error: 0.00026898224078584793

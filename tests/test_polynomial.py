@@ -33,7 +33,7 @@ class TestPolynomials(unittest.TestCase):
 
     def test_3d_polinomials_satisfy_differentiation_equation(self):
         polynomials = calculate_3d_polinomials(self.mfs_data.N, self.mfs_data.nu, self.mfs_data.Beta)
-        points = np.linspace(-1,1, 500) ## Note, the wider the range, the higher the error. Not sure if it is correct
+        points = np.linspace(-5,5, 100) ## Note, the wider the range, the higher the error. Not sure if it is correct
 
         for n, polinomial in enumerate(polynomials.polynomials):
             dv = polinomial.deriv()(points)
@@ -42,7 +42,7 @@ class TestPolynomials(unittest.TestCase):
             for m in range(n):
                 right += self.mfs_data.Beta[n-m]*polynomials.polynomials[m](points)
             difference = d2v - 2*self.mfs_data.nu*dv - right
-            # print(max(abs(difference)))
+            print(max(abs(difference)))
             self.assertTrue(np.allclose(difference, 0, atol=1e-8))
 
     def test_3d_polinomials_coefficient_first_column_ones(self):

@@ -35,6 +35,15 @@ class SourcePoints2D:
         raise NotImplementedError("This method is deprecated")
         return StarlikeCurve(self.gart1.collocation, [*self.gart1.points, *self.gart2.points])
         # return StarlikeCurve(self.gart1.collocation, np.concatenate((self.gart1.x, self.gart2.x)), np.concatenate((self.gart1.y, self.gart2.y)))
+    def points(self) -> np.ndarray:
+        '''
+            Return the mesh of source points
+        '''
+        return np.concatenate(
+            (
+                self.gart2.points_array.reshape(2,-1),
+                self.gart1.points_array.reshape(2,-1)
+            ), axis=1)
         
 
 def source_points_2d(

@@ -24,22 +24,62 @@ class TestDistanceFunctions(unittest.TestCase):
         self.assertAlmostEqual(point_distance(p1), 7.0710678118654755)
 
     def test_boundary_pointwise_distance_curve(self):
-        class MockStarlikeCurve(StarlikeCurve):
-            def raw_points(self):
-                return np.array([1, 2]), np.array([3, 4])
-
-        starlike1 = MockStarlikeCurve(None, None, None, None)
-        starlike2 = MockStarlikeCurve(None, None, None, None)
-        np.testing.assert_almost_equal(boundary_pointwise_distance(starlike1, starlike2), np.array([0, 0]))
+        # Create two simple StarlikeCurve objects with points_np arrays
+        points1 = np.array([[0, 1], [0, 0]])  # (0,0), (1,0)
+        points2 = np.array([[0, 0], [0, 1]])  # (0,0), (0,1)
+        starlike1 = StarlikeCurve(
+            rf=None,
+            drf=None,
+            collocation=None,
+            point_list=None,
+            normal_list=None,
+            points_np=points1,
+            normals_np=None,
+        )
+        starlike2 = StarlikeCurve(
+            rf=None,
+            drf=None,
+            collocation=None,
+            point_list=None,
+            normal_list=None,
+            points_np=points2,
+            normals_np=None,
+        )
+        # distances: between (0,0)-(0,0) = 0, (1,0)-(0,1) = sqrt(2)
+        np.testing.assert_almost_equal(
+            boundary_pointwise_distance(starlike1, starlike2),
+            np.array([0.0, np.sqrt(2)])
+        )
 
     def test_boundary_pointwise_distance_surface(self):
-        class MockStarlikeSurface(StarlikeSurface):
-            def raw_points(self):
-                return np.array([1, 2]), np.array([3, 4]), np.array([5, 6])
-
-        starlike1 = MockStarlikeSurface(None, None, None, None, None, None)
-        starlike2 = MockStarlikeSurface(None, None, None, None, None)
-        np.testing.assert_almost_equal(boundary_pointwise_distance(starlike1, starlike2), np.array([0, 0, 0]))
+        # Create two simple StarlikeSurface objects with mesh_np arrays
+        mesh1 = np.array([[0, 1], [0, 0], [0, 0]])  # (0,0,0), (1,0,0)
+        mesh2 = np.array([[0, 0], [0, 1], [0, 0]])  # (0,0,0), (0,1,0)
+        starlike1 = StarlikeSurface(
+            rf=None,
+            drf_phi=None,
+            drf_theta=None,
+            collocation=None,
+            point_list=None,
+            normal_list=None,
+            mesh_np=mesh1,
+            normals_mesh_np=None,
+        )
+        starlike2 = StarlikeSurface(
+            rf=None,
+            drf_phi=None,
+            drf_theta=None,
+            collocation=None,
+            point_list=None,
+            normal_list=None,
+            mesh_np=mesh2,
+            normals_mesh_np=None,
+        )
+        # distances: between (0,0,0)-(0,0,0) = 0, (1,0,0)-(0,1,0) = sqrt(2)
+        np.testing.assert_almost_equal(
+            boundary_pointwise_distance(starlike1, starlike2),
+            np.array([0.0, np.sqrt(2)])
+        )
 
 if __name__ == '__main__':
     unittest.main()

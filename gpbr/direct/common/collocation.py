@@ -2,6 +2,7 @@
     Collocation points for the MFS
 '''
 from dataclasses import dataclass
+
 import numpy as np
 
 @dataclass

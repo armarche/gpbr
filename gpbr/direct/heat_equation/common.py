@@ -3,8 +3,9 @@ Common data for the method of fundamental solutions for the heat equation proble
 """
 from enum import Enum
 from typing import Callable
-import numpy as np
 from dataclasses import dataclass
+
+import numpy as np
 
 from ..common.boundary import Point2D, Point3D
 
@@ -26,12 +27,23 @@ class MFSConfig:
     f2: Callable[[Point2D | Point3D], np.float64] # Data on Outer boundary
     eta1: np.float64 # MFS Coeefficient for the inner boundary
     eta2: np.float64 # MFS Coeefficient for the outer boundary
-    dim: Dimension = Dimension.TWO_D # Dimension of the problem
-    ## 3D specific parameters
-    n_coll_theta: np.int64 = None
-    n_coll_phi: np.int64 = None
-    n_source_theta: np.int64 = None
-    n_source_phi: np.int64 = None
+
+@dataclass(frozen=True)
+class MFSConfig2D(MFSConfig):
+    @property
+    def dim(self):
+        return Dimension.TWO_D
+
+@dataclass(frozen=True)
+class MFSConfig3D(MFSConfig):
+    n_coll_theta: np.int64
+    n_coll_phi: np.int64
+    n_source_theta: np.int64
+    n_source_phi: np.int64
+
+    @property
+    def dim(self):
+        return Dimension.THREE_D
 
 @dataclass(frozen=True)
 class MFSData: # Will be filled during implementing the problem

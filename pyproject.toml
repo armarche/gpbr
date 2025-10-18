@@ -1,0 +1,27 @@
+[project]
+name = "gpbr"
+version = "0.1.0"
+description = "Genetic Programming for boundary reconstruction problems"
+authors = [
+    {name = "arkma", email = "email@email.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy==2.3.4",
+    "scipy==1.16.2",
+    "deap==1.4.3",
+    "matplotlib==3.10.7",
+    "ray[default]==2.50.0",
+    "pytest"
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+# [project.optional-dependencies]
+# test = [
+#     "pytest",
+#     "pytest-cov"
+# ]

@@ -32,6 +32,76 @@ class Point3D:
     def __sub__(self, point):
         return Point3D(self.x-point.x, self.y-point.y, self.z-point.z)
 
+
+
+@dataclass(frozen=True)
+class Curve:
+    collocation: CollocationData2D
+    point_list: list[Point2D]
+    normal_list: list[Point2D] | None
+    points_np: np.ndarray
+    normals_np: np.ndarray | None
+
+
+@dataclass(frozen=True)
+class ParametricCurve:
+    xf: Callable[[float], float]
+    yf: Callable[[float], float]
+    dxf: Callable[[float], float]
+    dyf: Callable[[float], float]
+    collocation: CollocationData2D
+    point_list: list[Point2D]
+    normal_list: list[Point2D] | None
+    points_np: np.ndarray
+    normals_np: np.ndarray | None
+    @staticmethod
+    def from_parametric(collocation: CollocationData2D, f1: Callable[[float], float], f2: Callable[[float], float]):
+        xx = f1(collocation.theta)
+        yy = f2(collocation.theta)
+        return ParametricCurve(
+            xf=f1,
+            yf=f2,
+            dxf=None,
+            dyf=None,
+            collocation=collocation,
+            point_list=[Point2D(x, y) for x, y in zip(xx.ravel(), yy.ravel())],
+            normal_list=None,
+            points_np=np.array([xx, yy]),
+            normals_np=None
+        )
+
+    @staticmethod
+    def from_parametric_with_derivatives(
+        collocation: CollocationData2D,
+        f1: Callable[[float], float],
+        df1: Callable[[float], float],
+        f2: Callable[[float], float],
+        df2: Callable[[float], float]
+        ):
+        xx, yy = f1(collocation.theta), f2(collocation.theta)
+
+        tx, ty = df1(collocation.theta), df2(collocation.theta)
+
+        nx = ty  # Outward normal
+        ny = -tx
+
+        norms = np.sqrt(nx**2 + ny**2)
+        nx_normalized = nx / norms
+        ny_normalized = ny / norms
+
+        return ParametricCurve(
+            xf=f1,
+            yf=f2,
+            dxf=df1,
+            dyf=df2,
+            collocation=collocation,
+            point_list=np.array([Point2D(x, y) for x, y in zip(xx, yy)]),
+            normal_list=np.array([Point2D(nx, ny) for nx, ny in zip(nx_normalized, ny_normalized)]),
+            points_np=np.array([xx, yy]),
+            normals_np=np.array([nx_normalized, ny_normalized])
+        )
+    def __call__(self,s: np.ndarray):
+        return self.xf(s), self.yf(s)
 @dataclass(frozen=True)
 class StarlikeCurve:
     rf: Callable[[float], float]
@@ -92,8 +162,11 @@ class StarlikeCurve:
     def __getitem__(self, index:int):
         return self.point_list[index]
     
-    def __call__(self, s):
-        return Point2D(np.cos(s), np.sin(s))*self.rf(s)
+    # def __call__(self, s):
+    #     return Point2D(np.cos(s), np.sin(s))*self.rf(s)
+    def __call__(self, s: np.ndarray):
+        rvals = self.rf(s)
+        return np.cos(s) * rvals, np.sin(s) * rvals
 
     def normal(self, s):
         raise DeprecationWarning("This function is no longer used")

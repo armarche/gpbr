@@ -3,6 +3,9 @@ name: Python PR Unit Tests
 on:
   pull_request:
     branches: [ main ]
+    paths:
+      - gpbr/**
+      - tests/**
 
 jobs:
   build:

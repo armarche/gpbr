@@ -1,0 +1,71 @@
+# Spellchecker configuration for this repository.
+# This file is used by the project's GitHub Actions spellcheck workflow.
+# It lists files/globs to include and exclude and a curated project wordlist
+# for domain-specific terms, acronyms and library names.
+
+version: 1
+language: en_US
+
+# Files to check (globs). Keep this list focused to source, docs and notebooks.
+include:
+  - "**/*.py"
+  - "**/*.md"
+  - "**/*.rst"
+  - "**/*.ipynb"
+  - "**/*.m"
+  - "**/*.html"
+  - "README.md"
+
+# Paths and patterns to ignore. Exclude large data, build artifacts, binaries
+# and folders that contain many false positives.
+exclude:
+  - ".git/**"
+  - "venv/**"
+  - ".venv/**"
+  - "__pycache__/**"
+  - "build/**"
+  - "dist/**"
+  - "data/**"
+  - "results/**"
+  - "notebooks/**/results/**"
+  - "*.png"
+  - "*.jpg"
+  - "*.jpeg"
+  - "*.svg"
+  - "**/*.bin"
+
+# Project-specific words (whitelist) to avoid noisy false positives.
+# Add library names, domain terms, project symbols and common abbreviations.
+wordlist:
+  - gpbr
+  - GPBR
+  - MFS
+  - MFSPolynomials
+  - MFSPolynomials2D
+  - MFSPolynomials3D
+  - MFSConfig
+  - MFSConfig2D
+  - MFSConfig3D
+  - StarlikeCurve
+  - collocation
+  - collocation_points_2d
+  - SourcePoints2D
+  - SourcePoints3D
+  - Beta
+  - v_polynomials
+  - w_polynomials
+  - bessel
+  - ray
+  - deap
+  - numpy
+  - scipy
+  - matplotlib
+  - pytest
+  - poetry
+  - eta
+  - Beta
+  - gp_generation
+  - gp_half_and_hafl
+
+# Tune reporting behavior (some actions support level; keep it conservative)
+report_level: warn

@@ -35,5 +35,4 @@ def evaluate_subtrees(tree: PrimitiveTree, pset: PrimitiveSet, **kwargs):
             if stack:
                 stack[-1][1].append(val)
     
-    root_value = subtree_values[0]
-    return root_value, subtree_values
+    return subtree_values

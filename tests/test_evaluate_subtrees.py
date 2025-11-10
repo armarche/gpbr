@@ -39,7 +39,7 @@ class TestEvaluateSubtrees(unittest.TestCase):
         for expr in self.examples:
             with self.subTest(expr=expr):
                 tree = gp.PrimitiveTree.from_string(expr, self.pset)
-                root_val, subtree_vals = evaluate_subtrees(tree, self.pset, s=self.test_set)
+                subtree_vals = evaluate_subtrees(tree, self.pset, self.test_set.shape, s=self.test_set)
 
                 for i in range(len(tree)):
                     node = tree[i]
@@ -54,5 +54,5 @@ class TestEvaluateSubtrees(unittest.TestCase):
                     a = np.asarray(compiled_val)
                     b = np.asarray(eval_val)
 
-                    self.assertEqual(a.shape, b.shape, f"shape mismatch for node {i} ({node.name}): {a.shape} != {b.shape}")
+                    # We don't expect the shape to match as we return exactly the arg_shape values for evaluate_subtrees
                     np.testing.assert_allclose(a, b, equal_nan=True)

@@ -12,9 +12,10 @@ def simplify_constant_subtrees(ind, tol=1e-8):
     i=0
     while i < len(ind):
         slice_ = ind.searchSubtree(i)
+        node = ind[i]
         subtree_values = ind.subtrees_values[i]
 
-        if np.all(np.isfinite(subtree_values)) and np.std(subtree_values) < tol:
+        if not isinstance(node, gp.Terminal) and np.all(np.isfinite(subtree_values)) and np.std(subtree_values) < tol:
             # We select object return type to align with DEAP's expectations for Terminal nodes
             new_subtree.append(gp.Terminal(np.mean(subtree_values), False, object))
             i = slice_.stop

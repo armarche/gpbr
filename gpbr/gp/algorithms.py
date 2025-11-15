@@ -1,6 +1,7 @@
 import random
 import deap.tools as tools
 from IPython.core.debugger import set_trace
+import numpy as np
 
 def customVarOr(population, toolbox, lambda_, cxpb, mutpb):
     r"""Part of an evolutionary algorithm applying only the variation part
@@ -68,7 +69,7 @@ def customVarOr(population, toolbox, lambda_, cxpb, mutpb):
 
 
 def customEaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen,
-                   stats=None, halloffame=None, verbose=__debug__):
+                   stats=None, pop_stats=None, halloffame=None, verbose=__debug__):
     r"""This is the :math:`(\mu + \lambda)` evolutionary algorithm.
 
     :param population: A list of individuals.
@@ -116,7 +117,7 @@ def customEaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen,
     variation.
     """
     logbook = tools.Logbook()
-    logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
+    logbook.header = ['gen', 'nevals'] + (stats.fields if stats else []) + (pop_stats.fields if pop_stats else [])
 
     # Evaluate the individuals with an invalid fitness
     invalid_ind = [ind for ind in population if not ind.fitness.valid]
@@ -140,7 +141,8 @@ def customEaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen,
         halloffame.update(population)
 
     record = stats.compile(population) if stats is not None else {}
-    logbook.record(gen=0, nevals=len(invalid_ind), **record)
+    record_pop = pop_stats.compile(toolbox.similarity(population)) if pop_stats is not None else {}
+    logbook.record(gen=0, nevals=len(invalid_ind), **record, **record_pop)
     if verbose:
         print(logbook.stream)
 
@@ -175,7 +177,8 @@ def customEaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen,
 
         # Update the statistics with the new population
         record = stats.compile(population) if stats is not None else {}
-        logbook.record(gen=gen, nevals=len(invalid_ind), **record)
+        record_pop = pop_stats.compile(toolbox.similarity(population)) if pop_stats is not None else {}
+        logbook.record(gen=gen, nevals=len(invalid_ind), **record, **record_pop)
         if verbose:
             print(logbook.stream)
 
